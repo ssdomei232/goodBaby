@@ -6,7 +6,7 @@
 
 1. 接受 singnal 请求
 2. 当定时器超时(过长时间没有收到请求)时，触发 `trigger` 函数
-3. 发送消息到QQ
+3. 发送消息到QQ(依赖[CatBot](https://github.com/ssdomei232/CatBot))
 4. 发送邮件
 5. 将 Github 上的遗言仓库设置为 public
 
