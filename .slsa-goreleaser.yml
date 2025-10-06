@@ -1,9 +1,0 @@
-version: 1
-builds:
-  - main: .
-    binary: goodbaby
-    GOOS:
-      - linux
-      - windows
-    GOARCH:
-      - amd64
