@@ -17,7 +17,11 @@ func init() {
 	if err != nil {
 		log.Printf("获取配置文件失败: %v", err)
 	}
-	duration = time.Duration(config.DisconnectDuration) * time.Second
+	if config.Debug {
+		duration = time.Duration(config.DisconnectDuration) * time.Second
+	} else {
+		duration = time.Duration(config.DisconnectDuration) * time.Hour
+	}
 	timer = time.NewTimer(duration)
 	go func() {
 		<-timer.C

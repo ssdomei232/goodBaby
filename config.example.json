@@ -1,4 +1,5 @@
 {
+    "debug": false,
     "disconnect_duration": 5,
     "cat_bot_url": "",
     "cat_bot_key": "",
