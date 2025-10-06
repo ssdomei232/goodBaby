@@ -12,26 +12,26 @@ import (
 	"github.com/ssdomei232/goodBaby/configs"
 )
 
-func SendQQMsg() {
+func SendQQ() {
 	config, err := configs.GetConfig()
 	if err != nil {
 		log.Printf("获取配置文件失败: %v", err)
 	}
 
-	url := fmt.Sprintf("%s/%s", config.CatBotUrl, config.CatBotKey)
+	url := fmt.Sprintf("%s/?secret=%s", config.CatBotUrl, config.CatBotKey)
 
 	for _, groupId := range config.QQSendGroup {
-		sendMsg(url, groupId, config.QQMsg)
+		sendQQMsg(url, groupId, config.QQMsg)
 	}
 
 }
 
-func sendMsg(url string, groupId int, msg string) {
+func sendQQMsg(url string, groupId int, msg string) {
 	method := "POST"
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 	_ = writer.WriteField("group_id", strconv.Itoa(groupId))
-	_ = writer.WriteField("message", msg)
+	_ = writer.WriteField("message", msg) //TODO: 发送死亡区间
 	err := writer.Close()
 	if err != nil {
 		log.Println(err)

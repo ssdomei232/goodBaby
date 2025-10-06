@@ -5,6 +5,7 @@
     "qq_send_group": [],
     "qq_msg": "",
     "mail_list": [],
+    "mail_title": "摇篮系统已触发",
     "smtp_config": {
         "host": "",
         "port": 465,

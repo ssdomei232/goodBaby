@@ -17,7 +17,7 @@ func init() {
 	if err != nil {
 		log.Printf("获取配置文件失败: %v", err)
 	}
-	duration = time.Duration(config.DisconnectDuration) * time.Hour
+	duration = time.Duration(config.DisconnectDuration) * time.Second
 	timer = time.NewTimer(duration)
 	go func() {
 		<-timer.C
@@ -26,7 +26,8 @@ func init() {
 }
 
 func trigger() {
-	go internal.SendQQMsg()
+	go internal.SendQQ()
+	go internal.SendMail()
 }
 
 func main() {

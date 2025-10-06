@@ -12,6 +12,7 @@ type Config struct {
 	QQSendGroup        []int      `json:"qq_send_group"`
 	QQMsg              string     `json:"qq_msg"`
 	MailList           []string   `json:"mail_list"`
+	MailTitle          string     `json:"mail_title"`
 	SMTPConfig         SMTPConfig `json:"smtp_config"`
 	MailContent        string     `json:"mail_content"`
 }
@@ -20,7 +21,7 @@ type SMTPConfig struct {
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
 	User     string `json:"user"`
-	Password string `json:"password"`
+	Password string `json:"pass"`
 }
 
 func GetConfig() (config Config, err error) {
