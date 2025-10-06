@@ -1,0 +1,15 @@
+{
+    "disconnect_duration": 5,
+    "cat_bot_url": "",
+    "cat_bot_key": "",
+    "qq_send_group": [],
+    "qq_msg": "",
+    "mail_list": [],
+    "smtp_config": {
+        "host": "",
+        "port": 465,
+        "user": "",
+        "pass": ""
+    },
+    "mail_content": ""
+}
