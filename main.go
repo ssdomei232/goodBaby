@@ -30,7 +30,7 @@ func init() {
 	timer = time.NewTimer(duration)
 	go func() {
 		<-timer.C
-		trigger()
+		trigger(config)
 	}()
 
 	// 初始化bilibili客户端
@@ -39,8 +39,10 @@ func init() {
 	startCookieChecker() // 启动定期检查cookie有效性
 }
 
-func trigger() {
-	go internal.SendQQ()
+func trigger(config *configs.Config) {
+	if config.EnableQQ {
+		go internal.SendQQ()
+	}
 	go internal.SendMail()
 	go internal.Github()
 	go internal.SendBili(biliClient)

@@ -8,6 +8,7 @@
     "signal_secret": "",
     "debug": false,
     "disconnect_duration": 5,
+    "enable_qq": true,
     "cat_bot_url": "",
     "cat_bot_key": "",
     "qq_send_group": [],

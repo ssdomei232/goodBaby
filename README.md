@@ -26,6 +26,7 @@
     "signal_secret": "",            // 发送 signal请求时需要的密钥
     "debug": false,                 // debug 模式
     "disconnect_duration": 5,       // 失连时间，超出后会触发系统
+    "enable_qq": true,              // 是否启用QQ
     "cat_bot_url": "",              // CatBot 的 webhook地址(https://github.com/ssdomei232/CatBot)
     "cat_bot_key": "",              // CatBot 的 key
     "qq_send_group": [],            // 要发送QQ消息的群号

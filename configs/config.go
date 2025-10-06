@@ -10,6 +10,7 @@ type Config struct {
 	SignalSecret       string       `json:"signal_secret"`
 	Debug              bool         `json:"debug"`
 	DisconnectDuration int          `json:"disconnect_duration"` // Hours
+	EnableQQ           bool         `json:"enable_qq"`
 	CatBotUrl          string       `json:"cat_bot_url"`
 	CatBotKey          string       `json:"cat_bot_key"`
 	QQSendGroup        []int        `json:"qq_send_group"`
