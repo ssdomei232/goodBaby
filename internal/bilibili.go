@@ -55,7 +55,9 @@ func LoginWithQRCode(biliClient *bilibili.Client) {
 		return
 	}
 
-	log.Println("请使用哔哩哔哩APP扫码登录")
+	log.Println("请使用哔哩哔哩APP扫码登录或进入文件目录寻找qrcode.png查看二维码")
+	buf, _ := qrCode.Encode()
+	os.WriteFile("qrcode.png", buf, 0644)
 	qrCode.Print()
 
 	result, err := biliClient.LoginWithQRCode(bilibili.LoginWithQRCodeParam{
