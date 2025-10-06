@@ -9,6 +9,7 @@
 3. 发送消息到QQ(依赖[CatBot](https://github.com/ssdomei232/CatBot))
 4. 发送邮件
 5. 将 Github 上的遗言仓库设置为 public
+6. 发送一条 Bilibili 动态
 
 ## 配置
 
