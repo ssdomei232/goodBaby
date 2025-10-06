@@ -27,16 +27,16 @@ func init() {
 		duration = time.Duration(config.DisconnectDuration) * time.Hour
 	}
 
+	// 初始化bilibili客户端
+	biliClient = bilibili.New()
+	initBilibili()
+	startCookieChecker() // 启动定期检查cookie有效性
+
 	timer = time.NewTimer(duration)
 	go func() {
 		<-timer.C
 		trigger(config)
 	}()
-
-	// 初始化bilibili客户端
-	biliClient = bilibili.New()
-	initBilibili()
-	startCookieChecker() // 启动定期检查cookie有效性
 }
 
 func trigger(config configs.Config) {

@@ -107,7 +107,7 @@ func LoadCookies(client *bilibili.Client) bool {
 	return true
 }
 
-// 发送死亡通告
+// 在Bilibili动态发送死亡通告
 func SendBili(biliClient *bilibili.Client) {
 	config, err := configs.GetConfig()
 	if err != nil {

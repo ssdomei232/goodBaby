@@ -49,3 +49,15 @@
     "bili_warn_address": ""          // 哔哩哔哩cookie过期发送告警的邮件地址
 }
 ```
+
+## 运行
+
+```bash
+go build
+./goodBaby
+```
+
+之后在日志中找到 Bilibili 的登陆二维码,打开Bilibili APP 扫码登陆
+
+> [!NOTE]  
+> 只有在登陆 Bilibili 后程序才会正常运行

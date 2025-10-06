@@ -14,6 +14,7 @@ const (
 	retryDelay = 10 * time.Second
 )
 
+// 向邮件列表发送死亡通告
 func SendMail() {
 	config, err := configs.GetConfig()
 	if err != nil {

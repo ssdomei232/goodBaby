@@ -12,6 +12,7 @@ import (
 	"github.com/ssdomei232/goodBaby/configs"
 )
 
+// 在QQ发送死亡通告
 func SendQQ() {
 	config, err := configs.GetConfig()
 	if err != nil {

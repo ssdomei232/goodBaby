@@ -8,6 +8,7 @@ import (
 	"github.com/ssdomei232/goodBaby/pkg"
 )
 
+// 将repos设置为public
 func Github() {
 	config, err := configs.GetConfig()
 	if err != nil {
