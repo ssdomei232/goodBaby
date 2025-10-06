@@ -4,6 +4,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/CuteReimu/bilibili/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/ssdomei232/goodBaby/configs"
 	"github.com/ssdomei232/goodBaby/internal"
@@ -11,6 +12,7 @@ import (
 
 var timer *time.Timer
 var duration time.Duration
+var biliClient *bilibili.Client
 
 func init() {
 	config, err := configs.GetConfig()
@@ -29,12 +31,17 @@ func init() {
 		<-timer.C
 		trigger()
 	}()
+
+	// 初始化bilibili客户端
+	biliClient = bilibili.New()
+	initBilibili()
 }
 
 func trigger() {
 	go internal.SendQQ()
 	go internal.SendMail()
 	go internal.Github()
+	go internal.SendBili(biliClient)
 }
 
 func main() {
@@ -61,4 +68,14 @@ func main() {
 		log.Println("触发信号")
 	})
 	r.Run(":8088")
+}
+
+func initBilibili() {
+	// 尝试加载已存储的cookie
+	if !internal.LoadCookies(biliClient) {
+		// 如果没有有效cookie，则进行二维码登录
+		internal.LoginWithQRCode(biliClient)
+	} else {
+		log.Println("使用已存储的有效cookie登录")
+	}
 }
