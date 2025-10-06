@@ -82,7 +82,6 @@ func initBilibili() {
 	} else {
 		log.Println("使用已存储的有效cookie登录")
 	}
-
 }
 
 // 启动cookie定期检查
