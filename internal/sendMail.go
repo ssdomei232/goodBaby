@@ -3,28 +3,65 @@ package internal
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/ssdomei232/goodBaby/configs"
 	"github.com/wneessen/go-mail"
+)
+
+const (
+	maxRetries = 10
+	retryDelay = 10 * time.Second
 )
 
 func SendMail() {
 	config, err := configs.GetConfig()
 	if err != nil {
 		log.Printf("获取配置文件失败: %v", err)
+		return
 	}
+
 	for _, address := range config.MailList {
-		sendMailMsg(address, config.MailContent)
+		sendMailMsgWithRetry(address, config.MailContent, config.MailTitle)
 	}
 }
 
-func sendMailMsg(address string, msg string) {
-	config, err := configs.GetConfig()
-	if err != nil {
-		log.Printf("获取配置文件失败: %v", err)
+func sendMailMsgWithRetry(address string, msg string, title string) {
+	var lastErr error
+
+	// 重试循环
+	for i := 0; i <= maxRetries; i++ {
+		if i > 0 {
+			log.Printf("第 %d 次重试发送邮件给 %s", i, address)
+		}
+
+		err := sendMailMsg(address, msg, title)
+		if err == nil {
+			// 发送成功
+			fmt.Printf("邮件成功发送给 %s\n", address)
+			return
+		}
+
+		lastErr = err
+		log.Printf("发送邮件给 %s 失败: %v", address, err)
+
+		// 如果不是最后一次重试，则等待后重试
+		if i < maxRetries {
+			time.Sleep(retryDelay * time.Duration(i+1)) // 递增延迟
+		}
 	}
 
-	mailMsg := fmt.Sprintf("Hello,\nThis is a test email sent from Go!%s", msg)
+	// 所有重试都失败
+	log.Printf("发送邮件给 %s 经过 %d 次重试后仍然失败: %v", address, maxRetries, lastErr)
+}
+
+func sendMailMsg(address string, msg string, title string) error {
+	config, err := configs.GetConfig()
+	if err != nil {
+		return fmt.Errorf("获取配置文件失败: %v", err)
+	}
+
+	mailMsg := fmt.Sprintf("Hello,\nThis is a test email sent from Go!\n%s", msg)
 
 	client, err := mail.NewClient(
 		config.SMTPConfig.Host,
@@ -35,22 +72,26 @@ func sendMailMsg(address string, msg string) {
 		mail.WithSMTPAuth(mail.SMTPAuthPlain),
 	)
 	if err != nil {
-		log.Println(err)
-		return
+		return fmt.Errorf("创建邮件客户端失败: %v", err)
 	}
 
 	// 创建邮件
 	message := mail.NewMsg()
-	message.From(config.SMTPConfig.User)
-	message.To(address)
-	message.Subject(config.MailTitle)
+	if err := message.From(config.SMTPConfig.User); err != nil {
+		return fmt.Errorf("设置发件人失败: %v", err)
+	}
+
+	if err := message.To(address); err != nil {
+		return fmt.Errorf("设置收件人失败: %v", err)
+	}
+
+	message.Subject(title)
 	message.SetBodyString(mail.TypeTextPlain, mailMsg)
 
 	// 发送邮件
 	if err := client.DialAndSend(message); err != nil {
-		log.Println(err)
-		return
+		return fmt.Errorf("发送邮件失败: %v", err)
 	}
 
-	fmt.Println("Email sent successfully!")
+	return nil
 }
