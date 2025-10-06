@@ -53,11 +53,14 @@
 ## 运行
 
 ```bash
-go build
-./goodBaby
+mkdir goodbaby
+cd goodbaby
+wget https://raw.githubusercontent.com/ssdomei232/goodBaby/refs/heads/main/docker-compose.yml
+docker compose up -d
+docker logs goodbaby ## 扫码登陆后才能使用
 ```
 
-之后在日志中找到 Bilibili 的登陆二维码,打开Bilibili APP 扫码登陆
+在日志中找到 Bilibili 的登陆二维码,打开Bilibili APP 扫码登陆
 
 > [!NOTE]  
 > 只有在登陆 Bilibili 后程序才会正常运行
