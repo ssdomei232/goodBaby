@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	SignalSecret       string       `json:"signal_secret"`
 	Debug              bool         `json:"debug"`
 	DisconnectDuration int          `json:"disconnect_duration"` // Hours
 	CatBotUrl          string       `json:"cat_bot_url"`

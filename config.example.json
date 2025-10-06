@@ -1,4 +1,5 @@
 {
+    "signal_secret": "",
     "debug": false,
     "disconnect_duration": 5,
     "cat_bot_url": "",
@@ -13,5 +14,10 @@
         "user": "",
         "pass": ""
     },
-    "mail_content": ""
+    "mail_content": "",
+    "github_config": {
+        "owner": "",
+        "repos": [""],
+        "token": "ghp_xxxx"
+    }
 }

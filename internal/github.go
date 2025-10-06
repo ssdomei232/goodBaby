@@ -15,7 +15,6 @@ func Github() {
 	}
 
 	for _, repo := range config.GithubConfig.Repos {
-		// 添加重试机制
 		maxRetries := 10
 		for attempt := range maxRetries {
 			err := pkg.MakeRepositoryPublic(config.GithubConfig.Owner, repo, config.GithubConfig.Token)

@@ -38,13 +38,27 @@ func trigger() {
 }
 
 func main() {
+	config, err := configs.GetConfig()
+	if err != nil {
+		log.Printf("获取配置文件失败: %v", err)
+	}
+
 	r := gin.Default()
 	r.GET("/signal", func(c *gin.Context) {
+		secret := c.Query("secret")
+		if secret != config.SignalSecret {
+			c.JSON(403, gin.H{
+				"code":    403,
+				"message": "secret error",
+			})
+			return
+		}
 		timer.Reset(duration)
 		c.JSON(200, gin.H{
 			"code":    200,
 			"message": "ok",
 		})
+		log.Println("触发信号")
 	})
 	r.Run(":8088")
 }
