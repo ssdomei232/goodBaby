@@ -26,8 +26,7 @@ func init() {
 }
 
 func trigger() {
-	internal.SendQQMsg()
-	panic("die")
+	go internal.SendQQMsg()
 }
 
 func main() {
