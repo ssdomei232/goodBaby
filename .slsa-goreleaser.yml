@@ -1,13 +1,9 @@
 version: 1
 builds:
   - main: .
-    binary: goodBaby
-    env:
-      - CGO_ENABLED=0
+    binary: goodbaby
     goos:
       - linux
       - windows
-      - darwin
     goarch:
       - amd64
-      - arm64
