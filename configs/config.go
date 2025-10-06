@@ -6,16 +6,17 @@ import (
 )
 
 type Config struct {
-	Debug              bool       `json:"debug"`
-	DisconnectDuration int        `json:"disconnect_duration"` // Hours
-	CatBotUrl          string     `json:"cat_bot_url"`
-	CatBotKey          string     `json:"cat_bot_key"`
-	QQSendGroup        []int      `json:"qq_send_group"`
-	QQMsg              string     `json:"qq_msg"`
-	MailList           []string   `json:"mail_list"`
-	MailTitle          string     `json:"mail_title"`
-	SMTPConfig         SMTPConfig `json:"smtp_config"`
-	MailContent        string     `json:"mail_content"`
+	Debug              bool         `json:"debug"`
+	DisconnectDuration int          `json:"disconnect_duration"` // Hours
+	CatBotUrl          string       `json:"cat_bot_url"`
+	CatBotKey          string       `json:"cat_bot_key"`
+	QQSendGroup        []int        `json:"qq_send_group"`
+	QQMsg              string       `json:"qq_msg"`
+	MailList           []string     `json:"mail_list"`
+	MailTitle          string       `json:"mail_title"`
+	SMTPConfig         SMTPConfig   `json:"smtp_config"`
+	MailContent        string       `json:"mail_content"`
+	GithubConfig       GithubConfig `json:"github_config"`
 }
 
 type SMTPConfig struct {
@@ -23,6 +24,12 @@ type SMTPConfig struct {
 	Port     int    `json:"port"`
 	User     string `json:"user"`
 	Password string `json:"pass"`
+}
+
+type GithubConfig struct {
+	Owner string   `json:"owner"`
+	Repos []string `json:"repos"`
+	Token string   `json:"token"`
 }
 
 func GetConfig() (config Config, err error) {

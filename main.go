@@ -34,6 +34,7 @@ func init() {
 func trigger() {
 	go internal.SendQQ()
 	go internal.SendMail()
+	go internal.Github()
 }
 
 func main() {
