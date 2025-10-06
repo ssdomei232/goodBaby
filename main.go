@@ -39,7 +39,7 @@ func init() {
 	startCookieChecker() // 启动定期检查cookie有效性
 }
 
-func trigger(config *configs.Config) {
+func trigger(config configs.Config) {
 	if config.EnableQQ {
 		go internal.SendQQ()
 	}
