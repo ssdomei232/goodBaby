@@ -19,9 +19,10 @@ func SendQQ() {
 	}
 
 	url := fmt.Sprintf("%s/?secret=%s", config.CatBotUrl, config.CatBotKey)
+	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送(摇篮系统)", GetBasicInfo(), config.QQMsg)
 
 	for _, groupId := range config.QQSendGroup {
-		sendQQMsg(url, groupId, config.QQMsg)
+		sendQQMsg(url, groupId, stopMsg)
 	}
 
 }
@@ -31,7 +32,7 @@ func sendQQMsg(url string, groupId int, msg string) {
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 	_ = writer.WriteField("group_id", strconv.Itoa(groupId))
-	_ = writer.WriteField("message", msg) //TODO: 发送死亡区间
+	_ = writer.WriteField("message", msg)
 	err := writer.Close()
 	if err != nil {
 		log.Println(err)

@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	Basic              Basic        `json:"basic"`
 	SignalSecret       string       `json:"signal_secret"`
 	Debug              bool         `json:"debug"`
 	DisconnectDuration int          `json:"disconnect_duration"` // Hours
@@ -33,6 +34,13 @@ type GithubConfig struct {
 	Owner string   `json:"owner"`
 	Repos []string `json:"repos"`
 	Token string   `json:"token"`
+}
+
+type Basic struct {
+	Name      string `json:"name"`
+	Age       int    `json:"age"`
+	QQNumber  string `json:"qq_number"`
+	CauseStop string `json:"cause_stop"`
 }
 
 func GetConfig() (config Config, err error) {

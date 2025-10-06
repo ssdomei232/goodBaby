@@ -43,7 +43,7 @@ func trigger() {
 	go internal.SendQQ()
 	go internal.SendMail()
 	go internal.Github()
-	go internal.SendBili(biliClient)
+	// go internal.SendBili(biliClient)
 }
 
 func main() {

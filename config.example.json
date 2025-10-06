@@ -1,4 +1,10 @@
 {
+    "basic": {
+        "name": "xx",
+        "qq_number": "123",
+        "age": 16,
+        "cause_stop": "自杀"
+    },
     "signal_secret": "",
     "debug": false,
     "disconnect_duration": 5,

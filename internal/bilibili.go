@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -106,6 +107,7 @@ func LoadCookies(client *bilibili.Client) bool {
 	return true
 }
 
+// 发送死亡通告
 func SendBili(biliClient *bilibili.Client) {
 	config, err := configs.GetConfig()
 	if err != nil {
@@ -113,12 +115,14 @@ func SendBili(biliClient *bilibili.Client) {
 		return
 	}
 
+	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送(摇篮系统)", GetBasicInfo(), config.BiliMsg)
+
 	var dynamicParams bilibili.CreateDynamicParam
 	dynamicParams = bilibili.CreateDynamicParam{
 		DynamicId: 0,
 		Type:      4,
 		Rid:       0,
-		Content:   config.BiliMsg,
+		Content:   stopMsg,
 	}
 
 	// 重试机制

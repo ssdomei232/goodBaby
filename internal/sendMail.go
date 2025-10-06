@@ -21,8 +21,10 @@ func SendMail() {
 		return
 	}
 
+	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送(摇篮系统)", GetBasicInfo(), config.MailContent)
+
 	for _, address := range config.MailList {
-		sendMailMsgWithRetry(address, config.MailContent, config.MailTitle)
+		sendMailMsgWithRetry(address, stopMsg, config.MailTitle)
 	}
 }
 
@@ -61,8 +63,6 @@ func sendMailMsg(address string, msg string, title string) error {
 		return fmt.Errorf("获取配置文件失败: %v", err)
 	}
 
-	mailMsg := fmt.Sprintf("Hello,\nThis is a test email sent from Go!\n%s", msg)
-
 	client, err := mail.NewClient(
 		config.SMTPConfig.Host,
 		mail.WithPort(config.SMTPConfig.Port),
@@ -86,7 +86,7 @@ func sendMailMsg(address string, msg string, title string) error {
 	}
 
 	message.Subject(title)
-	message.SetBodyString(mail.TypeTextPlain, mailMsg)
+	message.SetBodyString(mail.TypeTextPlain, msg)
 
 	// 发送邮件
 	if err := client.DialAndSend(message); err != nil {
