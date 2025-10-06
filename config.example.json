@@ -19,5 +19,7 @@
         "owner": "",
         "repos": [""],
         "token": "ghp_xxxx"
-    }
+    },
+    "bili_msg": "摇篮系统测试",
+    "bili_warn_address": ""
 }

@@ -13,6 +13,7 @@ import (
 var timer *time.Timer
 var duration time.Duration
 var biliClient *bilibili.Client
+var cookieCheckTimer *time.Ticker
 
 func init() {
 	config, err := configs.GetConfig()
@@ -35,6 +36,7 @@ func init() {
 	// 初始化bilibili客户端
 	biliClient = bilibili.New()
 	initBilibili()
+	startCookieChecker() // 启动定期检查cookie有效性
 }
 
 func trigger() {
@@ -78,4 +80,17 @@ func initBilibili() {
 	} else {
 		log.Println("使用已存储的有效cookie登录")
 	}
+
+}
+
+// 启动cookie定期检查
+func startCookieChecker() {
+	// 每小时检查一次cookie有效性
+	cookieCheckTimer = time.NewTicker(1 * time.Hour)
+	go func() {
+		for {
+			<-cookieCheckTimer.C
+			internal.CheckCookieValidity(biliClient)
+		}
+	}()
 }

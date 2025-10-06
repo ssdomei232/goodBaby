@@ -19,6 +19,7 @@ type Config struct {
 	MailContent        string       `json:"mail_content"`
 	GithubConfig       GithubConfig `json:"github_config"`
 	BiliMsg            string       `json:"bili_msg"`
+	BiliWarnAddress    string       `json:"bili_warn_address"`
 }
 
 type SMTPConfig struct {

@@ -144,3 +144,98 @@ func SendBili(biliClient *bilibili.Client) {
 
 	log.Println("动态发送最终失败，已达到最大重试次数")
 }
+
+// 检查cookie有效性
+func CheckCookieValidity(biliClient *bilibili.Client) {
+	// 读取存储的cookie文件
+	if _, err := os.Stat("cookies.txt"); os.IsNotExist(err) {
+		log.Println("cookie文件不存在,需要重新登录")
+		triggerLoginRequest(biliClient)
+		return
+	}
+
+	cookiesBytes, err := os.ReadFile("cookies.txt")
+	if err != nil {
+		log.Printf("读取cookie文件失败: %v", err)
+		triggerLoginRequest(biliClient)
+		return
+	}
+
+	cookiesString := string(cookiesBytes)
+
+	// 检查cookie是否即将过期（提前1天提醒）
+	if isCookiesExpiringSoon(cookiesString) {
+		log.Println("cookie即将过期,需要重新登录")
+		triggerLoginRequest(biliClient)
+	}
+}
+
+// 检查cookie是否即将过期（提前1天）
+func isCookiesExpiringSoon(cookiesString string) bool {
+	lines := strings.Split(cookiesString, "\n")
+	for _, line := range lines {
+		if strings.Contains(line, "Expires=") {
+			// 提取过期时间字符串
+			expireStr := ""
+			parts := strings.Split(line, ";")
+			for _, part := range parts {
+				part = strings.TrimSpace(part)
+				if strings.HasPrefix(part, "Expires=") {
+					expireStr = strings.TrimPrefix(part, "Expires=")
+					break
+				}
+			}
+
+			if expireStr != "" {
+				// 解析过期时间
+				expireTime, err := http.ParseTime(expireStr)
+				if err != nil {
+					log.Printf("解析过期时间失败: %v", err)
+					return true // 如果解析失败，认为需要重新登录
+				}
+
+				// 检查是否即将过期（提前1天）
+				if time.Now().Add(24 * time.Hour).After(expireTime) {
+					return true // 即将过期
+				}
+			}
+		}
+	}
+
+	return false
+}
+
+// 触发登录请求
+func triggerLoginRequest(biliClient *bilibili.Client) {
+	// 获取配置
+	config, err := configs.GetConfig()
+	if err != nil {
+		log.Printf("获取配置文件失败: %v", err)
+		return
+	}
+
+	// 生成新的二维码
+	qrCode, err := biliClient.GetQRCode()
+	if err != nil {
+		log.Printf("获取二维码失败: %v", err)
+		return
+	}
+
+	// 在命令行打印二维码
+	log.Println("需要重新登录哔哩哔哩")
+	qrCode.Print()
+
+	// 通过邮件发送登录请求
+	emailTitle := "B站登录请求 - Cookie即将过期"
+	emailMsg := "您的B站cookie即将过期,请尽快重启摇篮系统进行登陆,请尽快完成登录操作。"
+
+	// 发送邮件通知
+	if config.BiliWarnAddress != "" {
+		err = sendMailMsg(config.BiliWarnAddress, emailMsg, emailTitle)
+		if err != nil {
+			log.Printf("发送登录邮件失败: %v", err)
+		} else {
+			log.Println("登录请求邮件已发送")
+		}
+	}
+}
