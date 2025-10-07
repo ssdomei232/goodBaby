@@ -24,6 +24,5 @@ go.work
 goodBaby
 config.json
 cookies.txt
-tmp/qrcode.png
-tmp/cookies.txt
+tmp/
 bye.json
