@@ -76,3 +76,4 @@ docker logs goodbaby ## 扫码登陆后才能使用
 
 - [ ] 熔断机制
 - [ ] Webhook 自定义请求
+- [ ] 保存定时器状态
