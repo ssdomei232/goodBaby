@@ -27,6 +27,7 @@ var biliClient *bilibili.Client
 var cookieCheckTimer *time.Ticker
 
 func init() {
+	// Get COnfig
 	config, err := configs.GetConfig()
 	if err != nil {
 		log.Printf("获取配置文件失败: %v", err)
@@ -38,15 +39,15 @@ func init() {
 		duration = time.Duration(config.DisconnectDuration) * time.Hour
 	}
 
-	// 检查并创建tmp目录
+	// Check and create tmp dir
 	if err := internal.EnsureTmpDirectory(); err != nil {
 		log.Printf("创建tmp目录失败: %v", err)
 	}
 
-	// 初始化bilibili客户端
+	// Init Bilibili Clinet
 	biliClient = bilibili.New()
 	initBilibili()
-	startCookieChecker() // 启动定期检查cookie有效性
+	startCookieChecker() // Check Bilibili cookie
 
 	internal.InitTimerManager(duration)
 	timer = time.NewTimer(duration)
@@ -69,12 +70,8 @@ func trigger(config configs.Config) {
 
 func main() {
 	r := gin.Default()
-
-	// 设置嵌入的模板
 	templFS, _ := fs.Sub(templateFiles, "templates")
 	r.SetHTMLTemplate(loadTemplates(templFS))
-
-	// 提供嵌入的静态文件
 	staticFS, _ := fs.Sub(staticFiles, "static")
 	r.StaticFS("/static", http.FS(staticFS))
 
@@ -89,18 +86,18 @@ func indexPage(c *gin.Context) {
 }
 
 func initBilibili() {
-	// 尝试加载已存储的cookie
+	// try cached cookie
 	if !internal.LoadCookies(biliClient) {
-		// 如果没有有效cookie，则进行二维码登录
+		// if cookie check failed, request qrcode login
 		internal.LoginWithQRCode(biliClient)
 	} else {
 		log.Println("使用已存储的有效cookie登录")
 	}
 }
 
-// 启动cookie定期检查
+// Enable periodic cookie checks
 func startCookieChecker() {
-	// 每小时检查一次cookie有效性
+	// check cookie per hour
 	cookieCheckTimer = time.NewTicker(1 * time.Hour)
 	go func() {
 		for {
@@ -133,7 +130,7 @@ func handleSignal(c *gin.Context) {
 	log.Println("触发信号")
 }
 
-// loadTemplates 从嵌入的文件系统加载模板
+// loadTemplates loads templates from the embedded file system
 func loadTemplates(filesystem fs.FS) *template.Template {
 	templ := template.Must(template.New("").ParseFS(filesystem, "*.html"))
 	return templ

@@ -45,6 +45,7 @@ type Basic struct {
 	CauseStop string `json:"cause_stop"`
 }
 
+// Get config from json file
 func GetConfig() (config Config, err error) {
 	content, err := os.ReadFile("config.json")
 	if err != nil {

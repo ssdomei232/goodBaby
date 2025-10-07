@@ -12,6 +12,7 @@ import (
 	"github.com/ssdomei232/goodBaby/configs"
 )
 
+// check tmp dir exist
 func EnsureTmpDirectory() error {
 	_, err := os.Stat("tmp")
 	if os.IsNotExist(err) {
@@ -29,41 +30,41 @@ func EnsureTmpDirectory() error {
 }
 
 func isCookiesExpired(cookiesString string) bool {
-	// 解析cookie中的过期时间
+	// parase expires date from cookie string
 	lines := strings.SplitSeq(cookiesString, "\n")
 	for line := range lines {
 		if strings.Contains(line, "Expires=") {
 			// 提取过期时间字符串
 			expireStr := ""
-			parts := strings.Split(line, ";")
-			for _, part := range parts {
+			parts := strings.SplitSeq(line, ";")
+			for part := range parts {
 				part = strings.TrimSpace(part)
-				if strings.HasPrefix(part, "Expires=") {
-					expireStr = strings.TrimPrefix(part, "Expires=")
+				if after, ok := strings.CutPrefix(part, "Expires="); ok {
+					expireStr = after
 					break
 				}
 			}
 
 			if expireStr != "" {
-				// 解析过期时间
+				// phrase expirres date
 				expireTime, err := http.ParseTime(expireStr)
 				if err != nil {
 					log.Printf("解析过期时间失败: %v", err)
-					return true // 如果解析失败，认为已过期
+					return true // if phrase failed, cookie expired
 				}
 
-				// 比较过期时间和当前时间
+				// compare expires date and now
 				if time.Now().After(expireTime) {
-					return true // 已过期
+					return true // expired
 				}
 			}
 		}
 	}
 
-	return false // 未过期
+	return false // not expired
 }
 
-// 二维码登录
+// Qrcode login
 func LoginWithQRCode(biliClient *bilibili.Client) {
 	qrCode, err := biliClient.GetQRCode()
 	if err != nil {
@@ -86,11 +87,11 @@ func LoginWithQRCode(biliClient *bilibili.Client) {
 
 	log.Println("登录成功")
 
-	// 保存新获取的cookie
+	// save new cookie
 	saveCookies(biliClient)
 }
 
-// 保存cookie到文件
+// save cookie to file
 func saveCookies(client *bilibili.Client) {
 	cookiesString := client.GetCookiesString()
 	err := os.WriteFile("tmp/cookies.txt", []byte(cookiesString), 0644)
