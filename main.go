@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"time"
 
 	"github.com/CuteReimu/bilibili/v2"
@@ -27,6 +28,11 @@ func init() {
 		duration = time.Duration(config.DisconnectDuration) * time.Hour
 	}
 
+	// 检查并创建tmp目录
+	if err := ensureTmpDirectory(); err != nil {
+		log.Printf("创建tmp目录失败: %v", err)
+	}
+
 	// 初始化bilibili客户端
 	biliClient = bilibili.New()
 	initBilibili()
@@ -37,6 +43,23 @@ func init() {
 		<-timer.C
 		trigger(config)
 	}()
+}
+
+// ensureTmpDirectory 检查tmp目录是否存在，如果不存在则创建
+func ensureTmpDirectory() error {
+	_, err := os.Stat("tmp")
+	if os.IsNotExist(err) {
+		err = os.Mkdir("tmp", 0755)
+		if err != nil {
+			return err
+		}
+		log.Println("已创建tmp目录")
+	} else if err != nil {
+		return err
+	} else {
+		log.Println("tmp目录已存在")
+	}
+	return nil
 }
 
 func trigger(config configs.Config) {
