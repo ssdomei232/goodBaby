@@ -57,7 +57,7 @@ func LoginWithQRCode(biliClient *bilibili.Client) {
 
 	log.Println("请使用哔哩哔哩APP扫码登录或进入文件目录寻找qrcode.png查看二维码")
 	buf, _ := qrCode.Encode()
-	os.WriteFile("qrcode.png", buf, 0644)
+	os.WriteFile("tmp/qrcode.png", buf, 0644)
 	qrCode.Print()
 
 	result, err := biliClient.LoginWithQRCode(bilibili.LoginWithQRCodeParam{
@@ -77,7 +77,7 @@ func LoginWithQRCode(biliClient *bilibili.Client) {
 // 保存cookie到文件
 func saveCookies(client *bilibili.Client) {
 	cookiesString := client.GetCookiesString()
-	err := os.WriteFile("cookies.txt", []byte(cookiesString), 0644)
+	err := os.WriteFile("tmp/cookies.txt", []byte(cookiesString), 0644)
 	if err != nil {
 		log.Printf("保存cookie失败: %v", err)
 	}
@@ -86,12 +86,12 @@ func saveCookies(client *bilibili.Client) {
 // 从文件加载cookie并验证有效性
 func LoadCookies(client *bilibili.Client) bool {
 	// 检查cookie文件是否存在
-	if _, err := os.Stat("cookies.txt"); os.IsNotExist(err) {
+	if _, err := os.Stat("tmp/cookies.txt"); os.IsNotExist(err) {
 		return false
 	}
 
 	// 读取cookie
-	cookiesBytes, err := os.ReadFile("cookies.txt")
+	cookiesBytes, err := os.ReadFile("tmp/cookies.txt")
 	if err != nil {
 		log.Printf("读取cookie文件失败: %v", err)
 		return false
@@ -154,13 +154,13 @@ func SendBili(biliClient *bilibili.Client) {
 // 检查cookie有效性
 func CheckCookieValidity(biliClient *bilibili.Client) {
 	// 读取存储的cookie文件
-	if _, err := os.Stat("cookies.txt"); os.IsNotExist(err) {
+	if _, err := os.Stat("tmp/cookies.txt"); os.IsNotExist(err) {
 		log.Println("cookie文件不存在,需要重新登录")
 		triggerLoginRequest(biliClient)
 		return
 	}
 
-	cookiesBytes, err := os.ReadFile("cookies.txt")
+	cookiesBytes, err := os.ReadFile("tmp/cookies.txt")
 	if err != nil {
 		log.Printf("读取cookie文件失败: %v", err)
 		triggerLoginRequest(biliClient)

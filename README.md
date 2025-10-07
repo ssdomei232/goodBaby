@@ -61,7 +61,7 @@ docker compose up -d
 docker logs goodbaby ## 扫码登陆后才能使用
 ```
 
-在日志中找到 Bilibili 的登陆二维码或在文件管理中找到`qrcode.png`,打开Bilibili APP 扫码登陆
+在日志中找到 Bilibili 的登陆二维码或在文件管理中找到`tmp/qrcode.png`,打开Bilibili APP 扫码登陆
 
 > [!NOTE]  
 > 只有在登陆 Bilibili 后程序才会正常运行
