@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GoodBaby</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GoodBaby控制面板</h1>
+        </header>
+
+        <main>
+            <section class="card">
+                <h2>🔐 身份验证</h2>
+                <div class="form-group">
+                    <label for="secret">请输入密钥:</label>
+                    <input type="password" id="secret" placeholder="输入您的访问密钥">
+                    <button id="save-secret" class="btn-secondary">保存密钥</button>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>📊 定时器状态</h2>
+                <div class="status-container">
+                    <div class="timer-display">
+                        <span id="remaining-time">--:--:--</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <button id="refresh-status" class="btn-primary">🔄 刷新状态</button>
+                </div>
+            </section>
+
+            <section class="card">
+                <h2>⚡ 操作控制</h2>
+                <div class="controls">
+                    <button id="send-signal" class="btn-danger">📡 发送信号</button>
+                    <p class="hint">点击按钮重置定时器</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>© 2025 GoodBaby</p>
+        </footer>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+</html>

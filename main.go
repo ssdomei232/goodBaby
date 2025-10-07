@@ -1,7 +1,12 @@
+// main.go
 package main
 
 import (
+	"embed"
+	"html/template"
+	"io/fs"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/CuteReimu/bilibili/v2"
@@ -9,6 +14,12 @@ import (
 	"github.com/ssdomei232/goodBaby/configs"
 	"github.com/ssdomei232/goodBaby/internal"
 )
+
+//go:embed static/*
+var staticFiles embed.FS
+
+//go:embed templates/*
+var templateFiles embed.FS
 
 var timer *time.Timer
 var duration time.Duration
@@ -58,9 +69,23 @@ func trigger(config configs.Config) {
 
 func main() {
 	r := gin.Default()
+
+	// 设置嵌入的模板
+	templFS, _ := fs.Sub(templateFiles, "templates")
+	r.SetHTMLTemplate(loadTemplates(templFS))
+
+	// 提供嵌入的静态文件
+	staticFS, _ := fs.Sub(staticFiles, "static")
+	r.StaticFS("/static", http.FS(staticFS))
+
+	r.GET("/", indexPage)
 	r.GET("/signal", handleSignal)
 	r.GET("/timer/status", internal.HandleTimerStatus)
 	r.Run(":8088")
+}
+
+func indexPage(c *gin.Context) {
+	c.HTML(http.StatusOK, "index.html", nil)
 }
 
 func initBilibili() {
@@ -106,4 +131,10 @@ func handleSignal(c *gin.Context) {
 		"message": "ok",
 	})
 	log.Println("触发信号")
+}
+
+// loadTemplates 从嵌入的文件系统加载模板
+func loadTemplates(filesystem fs.FS) *template.Template {
+	templ := template.Must(template.New("").ParseFS(filesystem, "*.html"))
+	return templ
 }

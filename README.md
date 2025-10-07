@@ -70,4 +70,4 @@ docker logs goodbaby ## 扫码登陆后才能使用
 
 ## 使用
 
-定期请求siganl接口,示例:`http://192.168.1.245:8088/signal?secret=xxxx`
+访问你开放的端口(默认为8088),进入WebUI,输入你的密钥,点击保存(密钥会存储到浏览器的localStorage中),此时你可以在WebUI查看倒计时和发送Signal
