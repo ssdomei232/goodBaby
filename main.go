@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 	"time"
 
 	"github.com/CuteReimu/bilibili/v2"
@@ -29,7 +28,7 @@ func init() {
 	}
 
 	// 检查并创建tmp目录
-	if err := ensureTmpDirectory(); err != nil {
+	if err := internal.EnsureTmpDirectory(); err != nil {
 		log.Printf("创建tmp目录失败: %v", err)
 	}
 
@@ -38,28 +37,12 @@ func init() {
 	initBilibili()
 	startCookieChecker() // 启动定期检查cookie有效性
 
+	internal.InitTimerManager(duration)
 	timer = time.NewTimer(duration)
 	go func() {
 		<-timer.C
 		trigger(config)
 	}()
-}
-
-// ensureTmpDirectory 检查tmp目录是否存在，如果不存在则创建
-func ensureTmpDirectory() error {
-	_, err := os.Stat("tmp")
-	if os.IsNotExist(err) {
-		err = os.Mkdir("tmp", 0755)
-		if err != nil {
-			return err
-		}
-		log.Println("已创建tmp目录")
-	} else if err != nil {
-		return err
-	} else {
-		log.Println("tmp目录已存在")
-	}
-	return nil
 }
 
 func trigger(config configs.Config) {
@@ -68,32 +51,15 @@ func trigger(config configs.Config) {
 	}
 	go internal.SendMail()
 	go internal.Github()
-	go internal.SendBili(biliClient)
+	if !config.Debug {
+		go internal.SendBili(biliClient)
+	}
 }
 
 func main() {
-	config, err := configs.GetConfig()
-	if err != nil {
-		log.Printf("获取配置文件失败: %v", err)
-	}
-
 	r := gin.Default()
-	r.GET("/signal", func(c *gin.Context) {
-		secret := c.Query("secret")
-		if secret != config.SignalSecret {
-			c.JSON(403, gin.H{
-				"code":    403,
-				"message": "secret error",
-			})
-			return
-		}
-		timer.Reset(duration)
-		c.JSON(200, gin.H{
-			"code":    200,
-			"message": "ok",
-		})
-		log.Println("触发信号")
-	})
+	r.GET("/signal", handleSignal)
+	r.GET("/timer/status", internal.HandleTimerStatus)
 	r.Run(":8088")
 }
 
@@ -117,4 +83,27 @@ func startCookieChecker() {
 			internal.CheckCookieValidity(biliClient)
 		}
 	}()
+}
+
+func handleSignal(c *gin.Context) {
+	config, err := configs.GetConfig()
+	if err != nil {
+		log.Printf("获取配置文件失败: %v", err)
+	}
+
+	secret := c.Query("secret")
+	if secret != config.SignalSecret {
+		c.JSON(403, gin.H{
+			"code":    403,
+			"message": "secret error",
+		})
+		return
+	}
+	timer.Reset(duration)
+	internal.GlobalTimerManager.Reset()
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "ok",
+	})
+	log.Println("触发信号")
 }

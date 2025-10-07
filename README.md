@@ -22,6 +22,7 @@
     "basic": {
         "name": "xx",               // 你的名字
         "qq_number": "123",         // QQ号
+        "nickname": "",             // 网名
         "age": 16,                  // 你的年龄
         "cause_stop": "自杀"        // 你最可能的死因
     },

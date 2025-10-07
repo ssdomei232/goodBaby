@@ -12,6 +12,22 @@ import (
 	"github.com/ssdomei232/goodBaby/configs"
 )
 
+func EnsureTmpDirectory() error {
+	_, err := os.Stat("tmp")
+	if os.IsNotExist(err) {
+		err = os.Mkdir("tmp", 0755)
+		if err != nil {
+			return err
+		}
+		log.Println("已创建tmp目录")
+	} else if err != nil {
+		return err
+	} else {
+		log.Println("tmp目录已存在")
+	}
+	return nil
+}
+
 func isCookiesExpired(cookiesString string) bool {
 	// 解析cookie中的过期时间
 	lines := strings.SplitSeq(cookiesString, "\n")

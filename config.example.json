@@ -2,6 +2,7 @@
     "basic": {
         "name": "xx",
         "qq_number": "123",
+        "nickname": "",
         "age": 16,
         "cause_stop": "自杀"
     },

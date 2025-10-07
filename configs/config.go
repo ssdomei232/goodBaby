@@ -40,6 +40,7 @@ type GithubConfig struct {
 type Basic struct {
 	Name      string `json:"name"`
 	Age       int    `json:"age"`
+	NickName  string `json:"nickname"`
 	QQNumber  string `json:"qq_number"`
 	CauseStop string `json:"cause_stop"`
 }
