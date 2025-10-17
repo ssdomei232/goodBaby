@@ -262,3 +262,25 @@ func triggerLoginRequest(biliClient *bilibili.Client) {
 		}
 	}
 }
+
+// Enable periodic cookie checks
+func StartCookieChecker(cookieCheckTimer *time.Ticker, biliClient *bilibili.Client) {
+	// check cookie per hour
+	cookieCheckTimer = time.NewTicker(1 * time.Hour)
+	go func() {
+		for {
+			<-cookieCheckTimer.C
+			CheckCookieValidity(biliClient)
+		}
+	}()
+}
+
+func InitBilibili(biliClient *bilibili.Client) {
+	// try cached cookie
+	if !LoadCookies(biliClient) {
+		// if cookie check failed, request qrcode login
+		LoginWithQRCode(biliClient)
+	} else {
+		log.Println("使用已存储的有效cookie登录")
+	}
+}
