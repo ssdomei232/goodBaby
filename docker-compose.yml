@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   goodbaby:
-    image: mei232/goodbaby:latest
+    image: mei232/goodbaby:v0.1.5
     ports:
       - "8088:8088"
     environment:
@@ -12,6 +12,7 @@ services:
       - app-network
     volumes:
       - ./config.json:/app/config.json:ro
+      - ./tmp:/app/tmp
 
 networks:
   app-network:
