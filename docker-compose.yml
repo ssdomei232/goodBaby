@@ -11,6 +11,8 @@ services:
     volumes:
       - ./config.json:/app/config.json:ro
       - ./tmp:/app/tmp
+    environment:
+      - GIN_MODE=release
 
 networks:
   app-network:
