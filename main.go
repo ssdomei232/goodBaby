@@ -70,10 +70,18 @@ func trigger(config configs.Config) {
 }
 
 func main() {
+	config, err := configs.GetConfig()
+	if err != nil {
+		log.Printf("获取配置文件失败: %v", err)
+	}
 	// cron job
 	internal.Reminder()
 	c := cron.New()
-	c.AddFunc("@every 1h", internal.Reminder)
+	if config.Debug {
+		c.AddFunc("@every 1s", internal.Reminder)
+	} else {
+		c.AddFunc("@every 1h", internal.Reminder)
+	}
 	c.Start()
 
 	// Web service

@@ -21,7 +21,7 @@ type Config struct {
 	MailContent        string       `json:"mail_content"`
 	GithubConfig       GithubConfig `json:"github_config"`
 	BiliMsg            string       `json:"bili_msg"`
-	BiliWarnAddress    string       `json:"bili_warn_address"`
+	DingtalkBot        DingtalkBot  `json:"dingtalk_bot"`
 }
 
 type SMTPConfig struct {
@@ -43,6 +43,11 @@ type Basic struct {
 	NickName  string `json:"nickname"`
 	QQNumber  string `json:"qq_number"`
 	CauseStop string `json:"cause_stop"`
+}
+
+type DingtalkBot struct {
+	AccessToken string `json:"access_token"`
+	Secret      string `json:"secret"`
 }
 
 // Get config from json file

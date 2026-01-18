@@ -195,16 +195,16 @@ func CheckCookieValidity(biliClient *bilibili.Client) {
 
 // 检查cookie是否即将过期（提前1天）
 func isCookiesExpiringSoon(cookiesString string) bool {
-	lines := strings.Split(cookiesString, "\n")
-	for _, line := range lines {
+	lines := strings.SplitSeq(cookiesString, "\n")
+	for line := range lines {
 		if strings.Contains(line, "Expires=") {
 			// 提取过期时间字符串
 			expireStr := ""
-			parts := strings.Split(line, ";")
-			for _, part := range parts {
+			parts := strings.SplitSeq(line, ";")
+			for part := range parts {
 				part = strings.TrimSpace(part)
-				if strings.HasPrefix(part, "Expires=") {
-					expireStr = strings.TrimPrefix(part, "Expires=")
+				if after, ok := strings.CutPrefix(part, "Expires="); ok {
+					expireStr = after
 					break
 				}
 			}
@@ -248,19 +248,15 @@ func triggerLoginRequest(biliClient *bilibili.Client) {
 	log.Println("需要重新登录哔哩哔哩")
 	qrCode.Print()
 
-	// 通过邮件发送登录请求
-	emailTitle := "B站登录请求 - Cookie即将过期"
-	emailMsg := "您的B站cookie即将过期,请尽快重启摇篮系统进行登陆,请尽快完成登录操作。"
+	// 通过Dingtalk发送登录请求
+	title := "B站登录请求 - Cookie即将过期"
+	msg := "您的B站cookie即将过期,请尽快重启摇篮系统进行登陆,请尽快完成登录操作。"
 
-	// 发送邮件通知
-	if config.BiliWarnAddress != "" {
-		err = sendMailMsg(config.BiliWarnAddress, emailMsg, emailTitle)
-		if err != nil {
-			log.Printf("发送登录邮件失败: %v", err)
-		} else {
-			log.Println("登录请求邮件已发送")
-		}
+	// 发送Dingtalk通知
+	if config.DingtalkBot.AccessToken != "" && config.DingtalkBot.Secret != "" {
+		sendDingTalkMsg(title, msg, config.DingtalkBot.AccessToken, config.DingtalkBot.Secret)
 	}
+
 }
 
 // Enable periodic cookie checks

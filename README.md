@@ -49,7 +49,10 @@
         "token": "ghp_xxxx"
     },
     "bili_msg": "xxx",               // 哔哩哔哩动态的附加消息
-    "bili_warn_address": ""          // 哔哩哔哩cookie过期发送告警的邮件地址
+    "dingtalk_bot": {
+        "access_token": "", // 钉钉机器人的 access_token
+        "secret": "" // 钉钉机器人的 secret
+    } // 钉钉机器人（用于提醒发送signal和bilibili过期提醒）
 }
 ```
 

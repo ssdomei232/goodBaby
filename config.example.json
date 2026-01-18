@@ -7,7 +7,7 @@
         "cause_stop": "自杀"
     },
     "signal_secret": "",
-    "debug": false,
+    "debug": true,
     "disconnect_duration": 5,
     "enable_qq": true,
     "cat_bot_url": "",
@@ -29,5 +29,8 @@
         "token": "ghp_xxxx"
     },
     "bili_msg": "摇篮系统测试",
-    "bili_warn_address": ""
+    "dingtalk_bot": {
+        "access_token": "",
+        "secret": ""
+    }
 }
