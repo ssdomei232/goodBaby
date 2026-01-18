@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   goodbaby:
     image: mei232/goodbaby:v0.1.6
