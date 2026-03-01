@@ -7,7 +7,7 @@
         "cause_stop": "自杀"
     },
     "signal_secret": "",
-    "debug": true,
+    "debug": false,
     "disconnect_duration": 5,
     "enable_qq": true,
     "cat_bot_url": "",
