@@ -16,6 +16,9 @@
 
 ## 配置
 
+> [!TIP]
+> 更详细的配置注解请前往 [Wiki 页面](https://github.com/ssdomei232/goodBaby/wiki)
+
 参照 config.example.json 修改 config.json
 
 ```json
