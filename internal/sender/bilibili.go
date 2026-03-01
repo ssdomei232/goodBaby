@@ -1,4 +1,4 @@
-package internal
+package sender
 
 import (
 	"fmt"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/CuteReimu/bilibili/v2"
 	"github.com/ssdomei232/goodBaby/configs"
+	"github.com/ssdomei232/goodBaby/internal/base"
 )
 
 // check tmp dir exist
@@ -134,7 +135,7 @@ func SendBili(biliClient *bilibili.Client) {
 		return
 	}
 
-	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送(摇篮系统)", GetBasicInfo(), config.BiliMsg)
+	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送(摇篮系统)", base.GetBasicInfo(), config.BiliMsg)
 
 	var dynamicParams bilibili.CreateDynamicParam
 	dynamicParams = bilibili.CreateDynamicParam{
@@ -254,7 +255,7 @@ func triggerLoginRequest(biliClient *bilibili.Client) {
 
 	// 发送Dingtalk通知
 	if config.DingtalkBot.AccessToken != "" && config.DingtalkBot.Secret != "" {
-		sendDingTalkMsg(title, msg, config.DingtalkBot.AccessToken, config.DingtalkBot.Secret)
+		SendDingTalkMsg(title, msg, config.DingtalkBot.AccessToken, config.DingtalkBot.Secret)
 	}
 
 }

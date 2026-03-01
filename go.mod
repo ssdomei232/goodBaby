@@ -1,12 +1,13 @@
 module github.com/ssdomei232/goodBaby
 
-go 1.24.0
+go 1.24.10
 
 require (
 	github.com/CatchZeng/dingtalk v1.5.0
 	github.com/CuteReimu/bilibili/v2 v2.3.5
 	github.com/gin-gonic/gin v1.11.0
 	github.com/robfig/cron/v3 v3.0.1
+	github.com/ssdomei232/napcat-http-go-sdk v0.0.0-20260301031057-040b9c49010b
 	github.com/wneessen/go-mail v0.7.2
 )
 
@@ -20,7 +21,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.27.0 // indirect
-	github.com/go-resty/resty/v2 v2.16.5 // indirect
+	github.com/go-resty/resty/v2 v2.17.2 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

@@ -1,6 +1,6 @@
 services:
   goodbaby:
-    image: mei232/goodbaby:v0.1.8
+    image: mei232/goodbaby:v0.2.0
     ports:
       - "8088:8088"
     environment:

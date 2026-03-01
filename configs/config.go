@@ -6,29 +6,25 @@ import (
 )
 
 type Config struct {
-	Basic              Basic        `json:"basic"`
 	SignalSecret       string       `json:"signal_secret"`
 	Debug              bool         `json:"debug"`
 	DisconnectDuration int          `json:"disconnect_duration"` // Hours
-	EnableQQ           bool         `json:"enable_qq"`
-	CatBotUrl          string       `json:"cat_bot_url"`
-	CatBotKey          string       `json:"cat_bot_key"`
-	QQSendGroup        []int        `json:"qq_send_group"`
-	QQMsg              string       `json:"qq_msg"`
-	MailList           []string     `json:"mail_list"`
-	MailTitle          string       `json:"mail_title"`
-	SMTPConfig         SMTPConfig   `json:"smtp_config"`
-	MailContent        string       `json:"mail_content"`
-	GithubConfig       GithubConfig `json:"github_config"`
 	BiliMsg            string       `json:"bili_msg"`
+	Basic              Basic        `json:"basic"`
+	MailConfig         MailConfig   `json:"mail_config"`
+	GithubConfig       GithubConfig `json:"github_config"`
 	DingtalkBot        DingtalkBot  `json:"dingtalk_bot"`
+	OneBotConfig       OneBotConfig `json:"onebot_config"`
 }
 
-type SMTPConfig struct {
-	Host     string `json:"host"`
-	Port     int    `json:"port"`
-	User     string `json:"user"`
-	Password string `json:"pass"`
+type MailConfig struct {
+	Host        string   `json:"host"`
+	Port        int      `json:"port"`
+	User        string   `json:"user"`
+	Password    string   `json:"pass"`
+	MailList    []string `json:"mail_list"`
+	MailTitle   string   `json:"mail_title"`
+	MailContent string   `json:"mail_content"`
 }
 
 type GithubConfig struct {
@@ -48,6 +44,13 @@ type Basic struct {
 type DingtalkBot struct {
 	AccessToken string `json:"access_token"`
 	Secret      string `json:"secret"`
+}
+
+type OneBotConfig struct {
+	URL        string `json:"url"` // 例如 "http://localhost:5700"
+	Token      string `json:"token"`
+	SendGroups []int  `json:"send_groups"`
+	Msg        string `json:"msg"`
 }
 
 // Get config from json file

@@ -1,4 +1,4 @@
-package internal
+package frontend
 
 import (
 	"html/template"

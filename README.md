@@ -12,6 +12,7 @@
 4. 发送邮件
 5. 将 Github 上的遗言仓库设置为 public
 6. 发送一条 Bilibili 动态
+7. 当倒计时小于48小时时，向用钉钉机器人发消息提醒你
 
 ## 配置
 
@@ -19,40 +20,41 @@
 
 ```json
 {
-    "basic": {
-        "name": "xx",               // 你的名字
-        "qq_number": "123",         // QQ号
-        "nickname": "",             // 网名
-        "age": 16,                  // 你的年龄
-        "cause_stop": "自杀"        // 你最可能的死因
-    },
-    "signal_secret": "",            // 发送 signal请求时需要的密钥
-    "debug": false,                 // debug 模式
-    "disconnect_duration": 5,       // 失连时间，超出后会触发系统
-    "enable_qq": true,              // 是否启用QQ
-    "cat_bot_url": "",              // CatBot 的 webhook地址(https://github.com/ssdomei232/CatBot)
-    "cat_bot_key": "",              // CatBot 的 key
-    "qq_send_group": [],            // 要发送QQ消息的群号
-    "qq_msg": "",                   // 要附加的QQ消息
-    "mail_list": [],                // 要发送的邮箱
-    "mail_title": "摇篮系统已触发",   // 邮件标题
-    "smtp_config": {                // 邮件服务器配置
-        "host": "",
+    "signal_secret": "xxx",                                 // 发送 signal请求时需要的密钥
+    "debug": false,                                         // debug 模式
+    "disconnect_duration": 80,                              // 失连时间，超出后会触发系统(小时)
+    "bili_msg": "摇篮系统测试",                               // 哔哩哔哩动态的附加消息
+    "mail_config": {
+        "host": "smtp.example.com",
         "port": 465,
-        "user": "",
-        "pass": ""
+        "user": "xxx",
+        "pass": "xxx",
+        "mail_list": ["xxx@example.com", "xxx1@example.com"],// 要发送的邮箱
+        "mail_title": "摇篮系统已触发",                        // 邮件标题
+        "mail_content": "这是摇篮系统的邮件内容。"              // 要附加的邮件内容
+    },                                                      // 邮件配置
+    "basic": {
+        "name": "xx",                                       // 你的名字
+        "qq_number": "123",                                 // 你的QQ号
+        "nickname": "xx_123",                               // 网名
+        "age": 16,                                          // 你的年龄
+        "cause_stop": "自杀"                                 // 你最可能的死因
     },
-    "mail_content": "",             // 要附加的邮件内容
-    "github_config": {              // Github 配置
-        "owner": "",
-        "repos": [""],
-        "token": "ghp_xxxx"
+    "github_config": {
+        "owner": "example",                                 // github用户名
+        "repos": ["example-repo1", "example-repo2"],        // 要公开的 github 仓库
+        "token": "ghp_xxxx"                                 // github token
     },
-    "bili_msg": "xxx",               // 哔哩哔哩动态的附加消息
     "dingtalk_bot": {
-        "access_token": "", // 钉钉机器人的 access_token
-        "secret": "" // 钉钉机器人的 secret
-    } // 钉钉机器人（用于提醒发送signal和bilibili过期提醒）
+        "access_token": "xxx",
+        "secret": "xxx"
+    },                                                     // 钉钉机器人（用于提醒发送signal和bilibili过期提醒）
+    "onebot_config": {
+        "url": "http://localhost:5700",
+        "token": "xxx",
+        "send_groups": [12345678, 87654321],                // 要发送到的Onebot群组
+        "msg": "这是OneBot的消息内容。"                       // Onebot消息
+    }
 }
 ```
 

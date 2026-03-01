@@ -1,4 +1,3 @@
-// main.go
 package main
 
 import (
@@ -12,7 +11,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 	"github.com/ssdomei232/goodBaby/configs"
-	"github.com/ssdomei232/goodBaby/internal"
+	"github.com/ssdomei232/goodBaby/internal/frontend"
+	"github.com/ssdomei232/goodBaby/internal/reminder"
+	"github.com/ssdomei232/goodBaby/internal/sender"
 )
 
 //go:embed static/*
@@ -27,7 +28,7 @@ var biliClient *bilibili.Client
 var cookieCheckTimer *time.Ticker
 
 func init() {
-	// Get COnfig
+	// 1. 加载配置文件
 	config, err := configs.GetConfig()
 	if err != nil {
 		log.Printf("获取配置文件失败: %v", err)
@@ -39,17 +40,17 @@ func init() {
 		duration = time.Duration(config.DisconnectDuration) * time.Hour
 	}
 
-	// Check and create tmp dir
-	if err := internal.EnsureTmpDirectory(); err != nil {
+	// 2. 检查并创建tmp目录
+	if err := sender.EnsureTmpDirectory(); err != nil {
 		log.Printf("创建tmp目录失败: %v", err)
 	}
 
-	// Init Bilibili Clinet
+	// 3. 初始化哔哩哔哩和定时器
 	biliClient = bilibili.New()
-	internal.InitBilibili(biliClient)
-	internal.StartCookieChecker(cookieCheckTimer, biliClient) // Check Bilibili cookie
+	sender.InitBilibili(biliClient)
+	sender.StartCookieChecker(cookieCheckTimer, biliClient) // Check Bilibili cookie
 
-	internal.InitTimerManager(duration)
+	reminder.InitTimerManager(duration)
 	timer = time.NewTimer(duration)
 	go func() {
 		<-timer.C
@@ -57,15 +58,13 @@ func init() {
 	}()
 }
 
-// trigger
+// 触发器
 func trigger(config configs.Config) {
-	if config.EnableQQ {
-		go internal.SendQQ()
-	}
-	go internal.SendMail()
-	go internal.Github()
+	go sender.SendOneBot()
+	go sender.SendMail()
+	go sender.Github()
 	if !config.Debug {
-		go internal.SendBili(biliClient)
+		go sender.SendBili(biliClient)
 	}
 }
 
@@ -74,26 +73,26 @@ func main() {
 	if err != nil {
 		log.Printf("获取配置文件失败: %v", err)
 	}
-	// cron job
-	internal.Reminder()
+	// 定时任务
+	reminder.Reminder()
 	c := cron.New()
 	if config.Debug {
-		c.AddFunc("@every 1s", internal.Reminder)
+		c.AddFunc("@every 1s", reminder.Reminder)
 	} else {
-		c.AddFunc("@every 1h", internal.Reminder)
+		c.AddFunc("@every 1h", reminder.Reminder)
 	}
 	c.Start()
 
-	// Web service
+	// 前端/后端
 	r := gin.Default()
 	templFS, _ := fs.Sub(templateFiles, "templates")
-	r.SetHTMLTemplate(internal.LoadTemplates(templFS))
+	r.SetHTMLTemplate(frontend.LoadTemplates(templFS))
 	staticFS, _ := fs.Sub(staticFiles, "static")
 	r.StaticFS("/static", http.FS(staticFS))
 
-	r.GET("/", internal.IndexPage)
+	r.GET("/", frontend.IndexPage)
 	r.GET("/signal", handleSignal)
-	r.GET("/timer/status", internal.HandleTimerStatus)
+	r.GET("/timer/status", reminder.HandleTimerStatus)
 	r.Run(":8088")
 }
 
@@ -113,7 +112,7 @@ func handleSignal(c *gin.Context) {
 		return
 	}
 	timer.Reset(duration)
-	internal.GlobalTimerManager.Reset()
+	reminder.GlobalTimerManager.Reset()
 	c.JSON(200, gin.H{
 		"code":    200,
 		"message": "ok",

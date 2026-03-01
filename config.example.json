@@ -1,36 +1,37 @@
 {
+    "signal_secret": "xxx",
+    "debug": true,
+    "disconnect_duration": 80,
+    "bili_msg": "摇篮系统测试",
+    "mail_config": {
+        "host": "smtp.example.com",
+        "port": 465,
+        "user": "xxx",
+        "pass": "xxx",
+        "mail_list": ["xxx@example.com", "xxx1@example.com"],
+        "mail_title": "摇篮系统已触发",
+        "mail_content": "这是摇篮系统的邮件内容。"
+    },
     "basic": {
         "name": "xx",
         "qq_number": "123",
-        "nickname": "",
+        "nickname": "xx_123",
         "age": 16,
         "cause_stop": "自杀"
     },
-    "signal_secret": "",
-    "debug": false,
-    "disconnect_duration": 5,
-    "enable_qq": true,
-    "cat_bot_url": "",
-    "cat_bot_key": "",
-    "qq_send_group": [],
-    "qq_msg": "",
-    "mail_list": [],
-    "mail_title": "摇篮系统已触发",
-    "smtp_config": {
-        "host": "",
-        "port": 465,
-        "user": "",
-        "pass": ""
-    },
-    "mail_content": "",
     "github_config": {
-        "owner": "",
-        "repos": [""],
+        "owner": "example",
+        "repos": ["example-repo1", "example-repo2"],
         "token": "ghp_xxxx"
     },
-    "bili_msg": "摇篮系统测试",
     "dingtalk_bot": {
-        "access_token": "",
-        "secret": ""
+        "access_token": "xxx",
+        "secret": "xxx"
+    },
+    "onebot_config": {
+        "url": "http://localhost:5700",
+        "token": "xxx",
+        "send_groups": [12345678, 87654321],
+        "msg": "这是OneBot的消息内容。"
     }
 }

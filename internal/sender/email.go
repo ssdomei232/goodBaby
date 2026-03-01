@@ -1,4 +1,4 @@
-package internal
+package sender
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ssdomei232/goodBaby/configs"
+	"github.com/ssdomei232/goodBaby/internal/base"
 	"github.com/wneessen/go-mail"
 )
 
@@ -22,10 +23,10 @@ func SendMail() {
 		return
 	}
 
-	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送", GetBasicInfo(), config.MailContent)
+	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送", base.GetBasicInfo(), config.MailConfig.MailContent)
 
-	for _, address := range config.MailList {
-		sendMailMsgWithRetry(address, stopMsg, config.MailTitle)
+	for _, address := range config.MailConfig.MailList {
+		sendMailMsgWithRetry(address, stopMsg, config.MailConfig.MailTitle)
 	}
 }
 
@@ -65,11 +66,11 @@ func sendMailMsg(address string, msg string, title string) error {
 	}
 
 	client, err := mail.NewClient(
-		config.SMTPConfig.Host,
-		mail.WithPort(config.SMTPConfig.Port),
+		config.MailConfig.Host,
+		mail.WithPort(config.MailConfig.Port),
 		mail.WithSSL(),
-		mail.WithUsername(config.SMTPConfig.User),
-		mail.WithPassword(config.SMTPConfig.Password),
+		mail.WithUsername(config.MailConfig.User),
+		mail.WithPassword(config.MailConfig.Password),
 		mail.WithSMTPAuth(mail.SMTPAuthPlain),
 	)
 	if err != nil {
@@ -78,7 +79,7 @@ func sendMailMsg(address string, msg string, title string) error {
 
 	// 创建邮件
 	message := mail.NewMsg()
-	if err := message.From(config.SMTPConfig.User); err != nil {
+	if err := message.From(config.MailConfig.User); err != nil {
 		return fmt.Errorf("设置发件人失败: %v", err)
 	}
 

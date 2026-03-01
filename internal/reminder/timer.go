@@ -1,4 +1,4 @@
-package internal
+package reminder
 
 import (
 	"net/http"
