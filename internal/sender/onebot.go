@@ -17,7 +17,7 @@ func SendOneBot() {
 		return
 	}
 
-	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送(摇篮系统)", base.GetBasicInfo(), config.OneBotConfig.Msg)
+	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送", base.GetBasicInfo(), config.OneBotConfig.Msg)
 
 	for _, groupId := range config.OneBotConfig.SendGroups {
 		sendOneBotMsg(groupId, stopMsg)
@@ -32,7 +32,7 @@ func sendOneBotMsg(groupID int, msg string) {
 		return
 	}
 
-	client := napcat.NewClient(config.OneBotConfig.URL, config.OneBotConfig.Token)
+	client := napcat.NewClient(config.OneBotConfig.Token, config.OneBotConfig.URL)
 
 	err = client.SendGroupMsg(strconv.Itoa(groupID), msg)
 	if err != nil {

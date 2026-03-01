@@ -7,7 +7,7 @@ require (
 	github.com/CuteReimu/bilibili/v2 v2.3.5
 	github.com/gin-gonic/gin v1.11.0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/ssdomei232/napcat-http-go-sdk v0.0.0-20260301031057-040b9c49010b
+	github.com/ssdomei232/napcat-http-go-sdk v1.0.0
 	github.com/wneessen/go-mail v0.7.2
 )
 

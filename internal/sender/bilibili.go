@@ -135,7 +135,7 @@ func SendBili(biliClient *bilibili.Client) {
 		return
 	}
 
-	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送(摇篮系统)", base.GetBasicInfo(), config.BiliMsg)
+	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送", base.GetBasicInfo(), config.BiliMsg)
 
 	var dynamicParams bilibili.CreateDynamicParam
 	dynamicParams = bilibili.CreateDynamicParam{
