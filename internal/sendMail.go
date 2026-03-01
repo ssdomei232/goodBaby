@@ -22,7 +22,7 @@ func SendMail() {
 		return
 	}
 
-	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送(摇篮系统)", GetBasicInfo(), config.MailContent)
+	stopMsg := fmt.Sprintf("%s\n\n%s\n\n本消息由自动程序发送", GetBasicInfo(), config.MailContent)
 
 	for _, address := range config.MailList {
 		sendMailMsgWithRetry(address, stopMsg, config.MailTitle)
