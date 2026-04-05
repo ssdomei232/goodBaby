@@ -33,6 +33,7 @@ func main() {
 		authorized.DELETE("/rules/:ruleID", rule.HandleDeleteRule)
 		authorized.GET("/accounts", account.HandleGetAllAccounts)
 		authorized.POST("/accounts", account.HandleAddAccount)
+		authorized.GET("/accounts/:accountID/check", account.HandleCheckDeleteAccount)
 	}
 
 	r.Run(":8088")
