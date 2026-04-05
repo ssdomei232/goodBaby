@@ -30,6 +30,7 @@ func main() {
 		authorized.GET("/user/info", user.HandleGetUserInfo)
 		authorized.GET("/rules", rule.HandleGetAllRules)
 		authorized.POST("/rules", rule.HandleCreateRule)
+		authorized.DELETE("/rules/:ruleID", rule.HandleDeleteRule)
 		authorized.GET("/accounts", account.HandleGetAllAccounts)
 		authorized.POST("/accounts", account.HandleAddAccount)
 	}

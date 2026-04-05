@@ -1,17 +1,17 @@
 # Bilibili
 
+## Account Config
+
+```json
+{
+    "raw_cookies": "xxxx"
+}
+```
+
 ## Dynamic Config
 
 ```json
 {
     "msg": "something"
-}
-```
-
-## Account Config
-
-```json
-{
-    "cookies_string": "xxxx"
 }
 ```

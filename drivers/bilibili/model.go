@@ -1,7 +1,7 @@
 package bilibili
 
 type BiliAccount struct {
-	CookiesString string `json:"cookies_string"`
+	RawCookies string `json:"raw_cookies"`
 }
 
 type BiliDynamicRule struct {
