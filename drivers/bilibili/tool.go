@@ -9,7 +9,7 @@ import (
 )
 
 // 获取 Bilibili Client
-func GetBiliClient(rule *model.Rule) (*bilibili.Client, error) {
+func getBiliClient(rule *model.Rule) (*bilibili.Client, error) {
 	client := bilibili.New()
 	gormDB, err := db.GetGormDB()
 	if err != nil {
@@ -33,4 +33,15 @@ func GetBiliClient(rule *model.Rule) (*bilibili.Client, error) {
 	client.SetRawCookies(biliAccountConfig.RawCookies)
 
 	return client, nil
+}
+
+// 获取 Bilibili Dynamic Config
+func getBiliDynamicConfig(rule *model.Rule) (*BiliDynamicConfig, error) {
+	var biliDynamicConfig BiliDynamicConfig
+	err := json.Unmarshal([]byte(rule.ConfigJson), &biliDynamicConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return &biliDynamicConfig, nil
 }

@@ -4,6 +4,6 @@ type BiliAccount struct {
 	RawCookies string `json:"raw_cookies"`
 }
 
-type BiliDynamicRule struct {
+type BiliDynamicConfig struct {
 	Msg string `json:"msg"`
 }

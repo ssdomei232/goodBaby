@@ -6,6 +6,11 @@ import (
 	"github.com/ssdomei232/goodBaby/handler/db"
 )
 
+type UserRegistryReuest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type User struct {
 	ID             uint    `json:"id" gorm:"primaryKey"`
 	CreateAt       int64   `json:"create_at"`

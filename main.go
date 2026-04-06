@@ -34,6 +34,7 @@ func main() {
 		authorized.GET("/accounts", account.HandleGetAllAccounts)
 		authorized.POST("/accounts", account.HandleAddAccount)
 		authorized.GET("/accounts/:accountID/check", account.HandleCheckDeleteAccount)
+		authorized.DELETE("/accounts/:accountID", account.HandleDeleteAccount)
 	}
 
 	r.Run(":8088")

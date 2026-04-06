@@ -1,6 +1,8 @@
 package user
 
 import (
+	"time"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/ssdomei232/goodBaby/handler/db"
@@ -33,6 +35,8 @@ func createUser(u *model.User) error {
 		return err
 	}
 	u.Password = hashedPassword
+
+	u.CreateAt = time.Now().Unix()
 
 	result := gormDB.Create(u)
 	return result.Error

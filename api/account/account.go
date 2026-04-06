@@ -73,7 +73,6 @@ func HandleCheckDeleteAccount(c *gin.Context) {
 		c.JSON(401, gin.H{"code": 401, "data": "获取用户信息失败"})
 		return
 	}
-
 	accountID, err := strconv.Atoi(c.Param("accountID"))
 	if err != nil {
 		c.JSON(400, gin.H{"code": 400, "data": "账号ID格式错误"})
@@ -96,19 +95,18 @@ func HandleDeleteAccount(c *gin.Context) {
 		c.JSON(401, gin.H{"code": 401, "data": "获取用户信息失败"})
 		return
 	}
-
 	accountID, err := strconv.Atoi(c.Param("accountID"))
 	if err != nil {
 		c.JSON(400, gin.H{"code": 400, "data": "账号ID格式错误"})
 		return
 	}
 
+	// 删除相关规则
 	rules, err := getRulesByAccountID(uint(accountID), userInfo.ID)
 	if err != nil {
 		c.JSON(500, gin.H{"code": 500, "data": "获取相关规则失败"})
 		return
 	}
-
 	for _, oneRule := range rules {
 		err = rule.DeleteRuleByID(oneRule.ID, userInfo.ID)
 		if err != nil {
@@ -117,12 +115,12 @@ func HandleDeleteAccount(c *gin.Context) {
 		}
 	}
 
+	// 删除账号
 	gormDB, err := db.GetGormDB()
 	if err != nil {
 		c.JSON(500, gin.H{"code": 500, "data": "服务器内部错误"})
 		return
 	}
-
 	result := gormDB.Where("id = ? AND uid = ?", accountID, userInfo.ID).Delete(&model.Account{})
 	if result.Error != nil {
 		c.JSON(500, gin.H{"code": 500, "data": "删除账号失败"})

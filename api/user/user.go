@@ -9,7 +9,7 @@ import (
 
 // 处理注册请求，配置文件中可设置禁用注册
 func HandleRegistry(c *gin.Context) {
-	var user model.User
+	var userRegistryRequest model.UserRegistryReuest
 	var err error
 
 	config, err := configs.GetConfig()
@@ -23,10 +23,15 @@ func HandleRegistry(c *gin.Context) {
 		return
 	}
 
-	err = c.BindJSON(&user)
+	err = c.BindJSON(&userRegistryRequest)
 	if err != nil {
 		c.JSON(400, gin.H{"code": 400, "data": "输入错误"})
 		return
+	}
+
+	user := model.User{
+		Username: userRegistryRequest.Username,
+		Password: userRegistryRequest.Password,
 	}
 
 	if err = user.IsValid(); err != nil {
@@ -53,13 +58,18 @@ func HandleRegistry(c *gin.Context) {
 
 // 处理登录请求
 func HandleLogin(c *gin.Context) {
-	var user model.User
+	var userLoginRequest model.UserRegistryReuest
 	var err error
 
-	err = c.BindJSON(&user)
+	err = c.BindJSON(&userLoginRequest)
 	if err != nil {
 		c.JSON(400, gin.H{"code": 400, "data": "输入错误"})
 		return
+	}
+
+	user := model.User{
+		Username: userLoginRequest.Username,
+		Password: userLoginRequest.Password,
 	}
 
 	if err = user.IsValid(); err != nil {
