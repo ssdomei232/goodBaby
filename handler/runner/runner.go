@@ -3,10 +3,6 @@ package runner
 import (
 	"log"
 
-	"github.com/ssdomei232/goodBaby/drivers/bilibili"
-	"github.com/ssdomei232/goodBaby/drivers/email"
-	"github.com/ssdomei232/goodBaby/drivers/github"
-	"github.com/ssdomei232/goodBaby/drivers/onebot"
 	"github.com/ssdomei232/goodBaby/handler/db"
 	"github.com/ssdomei232/goodBaby/model"
 )
@@ -28,21 +24,15 @@ func Runner(timer *model.Timer) {
 
 	// 2. 执行每个 Rule
 	for _, rule := range rules {
-		// 执行 rule
 		go executeRule(&rule)
 	}
 }
 
-// super switch
+// executeRule 执行单个规则
 func executeRule(rule *model.Rule) {
-	switch rule.Type {
-	case "bilibili-dynamic":
-		bilibili.SendBiliDynamicMsg(rule)
-	case "email":
-		email.SendMail(rule)
-	case "github-make-repo-public":
-		github.MakeRepositoryPublic(rule)
-	case "onebot":
-		onebot.SendOneBotMsg(rule)
+	executorRegistry := GetGlobalExecutorRegistry()
+
+	if err := executorRegistry.Execute(rule); err != nil {
+		log.Printf("执行规则失败 [ID: %d, Type: %s]: %v", rule.ID, rule.Type, err)
 	}
 }

@@ -1,0 +1,44 @@
+package ruleConfigChecker
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/mail"
+
+	"github.com/ssdomei232/goodBaby/drivers/email"
+)
+
+// EmailRuleValidator 邮件规则验证器
+type EmailRuleValidator struct{}
+
+func (v *EmailRuleValidator) GetType() string {
+	return "email"
+}
+
+func (v *EmailRuleValidator) Validate(configJSON string) error {
+	var config email.EmailRule
+	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
+		return fmt.Errorf("解析邮件规则配置失败: %v", err)
+	}
+
+	if config.Title == "" {
+		return fmt.Errorf("邮件规则配置中 title 不能为空")
+	}
+
+	if config.Msg == "" {
+		return fmt.Errorf("邮件规则配置中 msg 不能为空")
+	}
+
+	if len(config.Destinations) == 0 {
+		return fmt.Errorf("邮件规则配置中 destinations 不能为空")
+	}
+
+	// 验证邮箱地址格式
+	for _, dest := range config.Destinations {
+		if _, err := mail.ParseAddress(dest); err != nil {
+			return fmt.Errorf("无效的邮箱地址: %s", dest)
+		}
+	}
+
+	return nil
+}

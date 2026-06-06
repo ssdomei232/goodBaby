@@ -1,11 +1,13 @@
 package rule
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ssdomei232/goodBaby/api/user"
 	"github.com/ssdomei232/goodBaby/handler/db"
+	"github.com/ssdomei232/goodBaby/internal/ruleConfigChecker"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
@@ -50,6 +52,23 @@ func HandleCreateRule(c *gin.Context) {
 	var newRule model.Rule
 	if err := c.BindJSON(&newRule); err != nil {
 		c.JSON(400, gin.H{"code": 400, "data": "输入参数错误"})
+		return
+	}
+
+	if newRule.Type == "" {
+		c.JSON(400, gin.H{"code": 400, "data": "规则类型不能为空"})
+		return
+	}
+
+	if newRule.Name == "" {
+		c.JSON(400, gin.H{"code": 400, "data": "规则名称不能为空"})
+		return
+	}
+
+	// 规则校验
+	validatorRegistry := ruleConfigChecker.InitValidatorRegistry()
+	if err := validatorRegistry.Validate(newRule.Type, newRule.ConfigJson); err != nil {
+		c.JSON(400, gin.H{"code": 400, "data": fmt.Sprintf("规则配置验证失败: %s", err.Error())})
 		return
 	}
 

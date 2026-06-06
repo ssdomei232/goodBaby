@@ -12,9 +12,16 @@ import (
 	"github.com/ssdomei232/goodBaby/api/rule"
 	"github.com/ssdomei232/goodBaby/api/user"
 	"github.com/ssdomei232/goodBaby/handler/checker"
+	"github.com/ssdomei232/goodBaby/handler/runner"
 )
 
 func main() {
+	runner.InitExecutorRegistry()
+
+	c := cron.New()
+	c.AddFunc("@every 10m", checker.CheckTimers)
+	c.Start()
+
 	r := gin.Default()
 	store := cookie.NewStore(generateRandomKey(32))
 	r.Use(sessions.Sessions("goodbaby-session", store))
@@ -40,10 +47,6 @@ func main() {
 	}
 
 	r.Run(":8088")
-
-	c := cron.New()
-	c.AddFunc("@every 10m", checker.CheckTimers)
-	c.Start()
 }
 
 func generateRandomKey(length int) []byte {
