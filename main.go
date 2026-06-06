@@ -7,9 +7,11 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
 	"github.com/ssdomei232/goodBaby/api/account"
 	"github.com/ssdomei232/goodBaby/api/rule"
 	"github.com/ssdomei232/goodBaby/api/user"
+	"github.com/ssdomei232/goodBaby/handler/checker"
 )
 
 func main() {
@@ -38,6 +40,10 @@ func main() {
 	}
 
 	r.Run(":8088")
+
+	c := cron.New()
+	c.AddFunc("@every 10m", checker.CheckTimers)
+	c.Start()
 }
 
 func generateRandomKey(length int) []byte {

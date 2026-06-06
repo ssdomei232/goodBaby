@@ -1,6 +1,8 @@
 package user
 
 import (
+	"database/sql"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/ssdomei232/goodBaby/configs"
@@ -76,8 +78,11 @@ func HandleLogin(c *gin.Context) {
 		c.JSON(400, gin.H{"code": 400, "data": err.Error()})
 	}
 
-	if err = verifyUser(&user); err != nil {
-		c.JSON(400, gin.H{"code": 400, "data": "用户名或密码错误"})
+	if err = verifyUser(&user); err == sql.ErrNoRows {
+		c.JSON(400, gin.H{"code": 400, "data": "用户不存在"})
+		return
+	} else if err != nil {
+		c.JSON(500, gin.H{"code": 500, "data": "登录失败"})
 		return
 	}
 

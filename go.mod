@@ -9,6 +9,7 @@ require (
 	github.com/gin-contrib/sessions v1.0.4
 	github.com/gin-gonic/gin v1.11.0
 	github.com/google/go-github/v84 v84.0.0
+	github.com/robfig/cron/v3 v3.0.1
 	github.com/ssdomei232/napcat-http-go-sdk v1.0.0
 	github.com/wneessen/go-mail v0.7.2
 	golang.org/x/crypto v0.48.0
