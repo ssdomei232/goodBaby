@@ -1,9 +1,8 @@
-package runner
+package onebot
 
 import (
 	"log"
 
-	"github.com/ssdomei232/goodBaby/drivers/onebot"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
@@ -17,7 +16,7 @@ func (e *OneBotExecutor) GetType() string {
 func (e *OneBotExecutor) Execute(rule *model.Rule) error {
 	log.Printf("执行OneBot规则: %s (ID: %d)", rule.Name, rule.ID)
 
-	onebot.SendOneBotMsg(rule)
+	SendOneBotMsg(rule)
 
 	return nil
 }

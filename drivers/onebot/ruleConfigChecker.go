@@ -1,10 +1,8 @@
-package ruleConfigChecker
+package onebot
 
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/ssdomei232/goodBaby/drivers/onebot"
 )
 
 // OneBotRuleValidator OneBot规则验证器
@@ -15,7 +13,7 @@ func (v *OneBotRuleValidator) GetType() string {
 }
 
 func (v *OneBotRuleValidator) Validate(configJSON string) error {
-	var config onebot.OneBotConfig
+	var config OneBotConfig
 	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
 		return fmt.Errorf("解析OneBot规则配置失败: %v", err)
 	}

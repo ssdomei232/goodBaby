@@ -36,14 +36,26 @@ func main() {
 	authorized := v1.Group("/")
 	authorized.Use(user.AuthMiddleware())
 	{
-		authorized.GET("/user/info", user.HandleGetUserInfo)
-		authorized.GET("/rules", rule.HandleGetAllRules)
-		authorized.POST("/rules", rule.HandleCreateRule)
-		authorized.DELETE("/rules/:ruleID", rule.HandleDeleteRule)
-		authorized.GET("/accounts", account.HandleGetAllAccounts)
-		authorized.POST("/accounts", account.HandleAddAccount)
-		authorized.GET("/accounts/:accountID/check", account.HandleCheckDeleteAccount)
-		authorized.DELETE("/accounts/:accountID", account.HandleDeleteAccount)
+		users := authorized.Group("/user")
+		{
+			users.GET("/info", user.HandleGetUserInfo)
+		}
+
+		rules := authorized.Group("/rules")
+		{
+			rules.GET("/", rule.HandleGetAllRules)
+			rules.POST("/", rule.HandleCreateRule)
+			rules.PUT("/:ruleID", rule.HandleEditRule)
+			rules.DELETE("/:ruleID", rule.HandleDeleteRule)
+		}
+
+		accounts := authorized.Group("/accounts")
+		{
+			accounts.GET("/", account.HandleGetAllAccounts)
+			accounts.POST("/", account.HandleAddAccount)
+			accounts.GET("/:accountID/check", account.HandleCheckDeleteAccount)
+			accounts.DELETE("/:accountID", account.HandleDeleteAccount)
+		}
 	}
 
 	r.Run(":8088")

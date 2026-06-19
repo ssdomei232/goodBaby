@@ -3,6 +3,10 @@ package runner
 import (
 	"fmt"
 
+	"github.com/ssdomei232/goodBaby/drivers/bilibili"
+	"github.com/ssdomei232/goodBaby/drivers/email"
+	"github.com/ssdomei232/goodBaby/drivers/github"
+	"github.com/ssdomei232/goodBaby/drivers/onebot"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
@@ -57,10 +61,10 @@ func InitExecutorRegistry() *ExecutorRegistry {
 	registry := NewExecutorRegistry()
 
 	// 注册所有规则执行器
-	registry.Register(&BilibiliDynamicExecutor{})
-	registry.Register(&EmailExecutor{})
-	registry.Register(&GithubMakeRepoPublicExecutor{})
-	registry.Register(&OneBotExecutor{})
+	registry.Register(&bilibili.BilibiliDynamicExecutor{})
+	registry.Register(&email.EmailExecutor{})
+	registry.Register(&github.GithubMakeRepoPublicExecutor{})
+	registry.Register(&onebot.OneBotExecutor{})
 	// 未来添加新规则类型时，在这里注册即可
 
 	globalExecutorRegistry = registry

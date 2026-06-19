@@ -1,9 +1,8 @@
-package runner
+package email
 
 import (
 	"log"
 
-	"github.com/ssdomei232/goodBaby/drivers/email"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
@@ -17,7 +16,7 @@ func (e *EmailExecutor) GetType() string {
 func (e *EmailExecutor) Execute(rule *model.Rule) error {
 	log.Printf("执行邮件规则: %s (ID: %d)", rule.Name, rule.ID)
 
-	email.SendMail(rule)
+	SendMail(rule)
 
 	return nil
 }

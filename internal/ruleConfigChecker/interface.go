@@ -59,16 +59,3 @@ func (vr *ValidatorRegistry) GetSupportedTypes() []string {
 	}
 	return types
 }
-
-// InitValidatorRegistry 初始化验证器注册表并注册所有验证器
-func InitValidatorRegistry() *ValidatorRegistry {
-	registry := NewValidatorRegistry()
-
-	// 注册所有规则验证器
-	registry.Register(&BilibiliDynamicRuleValidator{})
-	registry.Register(&EmailRuleValidator{})
-	registry.Register(&OneBotRuleValidator{})
-	registry.Register(&DingTalkRuleValidator{})
-
-	return registry
-}

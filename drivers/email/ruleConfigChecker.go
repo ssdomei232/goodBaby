@@ -1,11 +1,9 @@
-package ruleConfigChecker
+package email
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/mail"
-
-	"github.com/ssdomei232/goodBaby/drivers/email"
 )
 
 // EmailRuleValidator 邮件规则验证器
@@ -16,7 +14,7 @@ func (v *EmailRuleValidator) GetType() string {
 }
 
 func (v *EmailRuleValidator) Validate(configJSON string) error {
-	var config email.EmailRule
+	var config EmailRule
 	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
 		return fmt.Errorf("解析邮件规则配置失败: %v", err)
 	}

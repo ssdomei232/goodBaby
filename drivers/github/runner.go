@@ -1,9 +1,8 @@
-package runner
+package github
 
 import (
 	"log"
 
-	"github.com/ssdomei232/goodBaby/drivers/github"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
@@ -17,7 +16,7 @@ func (e *GithubMakeRepoPublicExecutor) GetType() string {
 func (e *GithubMakeRepoPublicExecutor) Execute(rule *model.Rule) error {
 	log.Printf("执行GitHub仓库公开规则: %s (ID: %d)", rule.Name, rule.ID)
 
-	github.MakeRepositoryPublic(rule)
+	MakeRepositoryPublic(rule)
 
 	return nil
 }

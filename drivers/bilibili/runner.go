@@ -1,9 +1,8 @@
-package runner
+package bilibili
 
 import (
 	"log"
 
-	"github.com/ssdomei232/goodBaby/drivers/bilibili"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
@@ -17,7 +16,7 @@ func (e *BilibiliDynamicExecutor) GetType() string {
 func (e *BilibiliDynamicExecutor) Execute(rule *model.Rule) error {
 	log.Printf("执行B站动态规则: %s (ID: %d)", rule.Name, rule.ID)
 
-	bilibili.SendBiliDynamicMsg(rule)
+	SendBiliDynamicMsg(rule)
 
 	return nil
 }

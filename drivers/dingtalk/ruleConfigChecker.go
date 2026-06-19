@@ -1,10 +1,8 @@
-package ruleConfigChecker
+package dingtalk
 
 import (
 	"encoding/json"
 	"fmt"
-
-	"github.com/ssdomei232/goodBaby/drivers/dingtalk"
 )
 
 // DingTalkRuleValidator 钉钉规则验证器
@@ -15,7 +13,7 @@ func (v *DingTalkRuleValidator) GetType() string {
 }
 
 func (v *DingTalkRuleValidator) Validate(configJSON string) error {
-	var config dingtalk.DingTalkConfig
+	var config DingTalkConfig
 	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
 		return fmt.Errorf("解析钉钉规则配置失败: %v", err)
 	}
