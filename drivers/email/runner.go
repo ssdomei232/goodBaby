@@ -1,6 +1,7 @@
 package email
 
 import (
+	"context"
 	"log"
 
 	"github.com/ssdomei232/goodBaby/model"
@@ -10,13 +11,11 @@ import (
 type EmailExecutor struct{}
 
 func (e *EmailExecutor) GetType() string {
-	return "email"
+	return RuleType
 }
 
-func (e *EmailExecutor) Execute(rule *model.Rule) error {
+func (e *EmailExecutor) Execute(ctx context.Context, rule *model.Rule) error {
 	log.Printf("执行邮件规则: %s (ID: %d)", rule.Name, rule.ID)
 
-	SendMail(rule)
-
-	return nil
+	return SendMail(ctx, rule)
 }

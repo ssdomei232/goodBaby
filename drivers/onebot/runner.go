@@ -1,6 +1,7 @@
 package onebot
 
 import (
+	"context"
 	"log"
 
 	"github.com/ssdomei232/goodBaby/model"
@@ -10,13 +11,11 @@ import (
 type OneBotExecutor struct{}
 
 func (e *OneBotExecutor) GetType() string {
-	return "onebot"
+	return RuleType
 }
 
-func (e *OneBotExecutor) Execute(rule *model.Rule) error {
+func (e *OneBotExecutor) Execute(ctx context.Context, rule *model.Rule) error {
 	log.Printf("执行OneBot规则: %s (ID: %d)", rule.Name, rule.ID)
 
-	SendOneBotMsg(rule)
-
-	return nil
+	return SendOneBotMsg(ctx, rule)
 }

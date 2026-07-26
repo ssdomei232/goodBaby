@@ -1,6 +1,7 @@
 package github
 
 import (
+	"context"
 	"log"
 
 	"github.com/ssdomei232/goodBaby/model"
@@ -10,13 +11,11 @@ import (
 type GithubMakeRepoPublicExecutor struct{}
 
 func (e *GithubMakeRepoPublicExecutor) GetType() string {
-	return "github-make-repo-public"
+	return RuleTypeMakeRepoPublic
 }
 
-func (e *GithubMakeRepoPublicExecutor) Execute(rule *model.Rule) error {
+func (e *GithubMakeRepoPublicExecutor) Execute(ctx context.Context, rule *model.Rule) error {
 	log.Printf("执行GitHub仓库公开规则: %s (ID: %d)", rule.Name, rule.ID)
 
-	MakeRepositoryPublic(rule)
-
-	return nil
+	return MakeRepositoryPublic(ctx, rule)
 }

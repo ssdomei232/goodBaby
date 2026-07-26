@@ -1,20 +1,31 @@
 package accountConfigChecker
 
 import (
+	"sync"
+
 	"github.com/ssdomei232/goodBaby/drivers/bilibili"
 	"github.com/ssdomei232/goodBaby/drivers/email"
 	"github.com/ssdomei232/goodBaby/drivers/github"
 	"github.com/ssdomei232/goodBaby/drivers/onebot"
 )
 
+var (
+	once     sync.Once
+	registry *ValidatorRegistry
+)
+
+// InitValidatorRegistry 返回全局唯一的账号验证器注册表
 func InitValidatorRegistry() *ValidatorRegistry {
-	registry := NewValidatorRegistry()
+	once.Do(func() {
+		r := NewValidatorRegistry()
 
-	// 注册所有账号验证器
-	registry.Register(&bilibili.BilibiliAccountConfigValidator{})
-	registry.Register(&email.EmailAccountConfigValidator{})
-	registry.Register(&github.GitHubAccountConfigValidator{})
-	registry.Register(&onebot.OneBotAccountConfigValidator{})
+		// 注册所有账号验证器
+		r.Register(&bilibili.BilibiliAccountConfigValidator{})
+		r.Register(&email.EmailAccountConfigValidator{})
+		r.Register(&github.GitHubAccountConfigValidator{})
+		r.Register(&onebot.OneBotAccountConfigValidator{})
 
+		registry = r
+	})
 	return registry
 }

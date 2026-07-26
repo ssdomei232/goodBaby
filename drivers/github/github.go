@@ -2,41 +2,33 @@ package github
 
 import (
 	"context"
-	"log"
-	"time"
+	"fmt"
+	"strings"
 
-	"github.com/cenkalti/backoff/v5"
-	"github.com/ssdomei232/goodBaby/configs"
+	"github.com/ssdomei232/goodBaby/internal/retry"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-// 将repos设置为public
-func MakeRepositoryPublic(rule *model.Rule) {
-	reposConfig, account := GetGithubReposAndAccountFromRule(rule)
-	if reposConfig == nil || account == nil {
-		log.Printf("无法获取 GitHub 配置或账户信息")
-		return
+// MakeRepositoryPublic 将规则中配置的仓库设置为 public
+func MakeRepositoryPublic(ctx context.Context, rule *model.Rule) error {
+	reposConfig, account, err := GetGithubReposAndAccountFromRule(rule)
+	if err != nil {
+		return err
 	}
 
+	var fails []string
 	for _, repo := range reposConfig.Repos {
-		config, err := configs.GetConfig()
+		err := retry.Do(ctx, func() error {
+			return SetRepositoryPublic(ctx, account.Token, account.Owner, repo)
+		})
 		if err != nil {
-			log.Printf("获取配置失败: %v", err)
-			return
-		}
-		var timeout time.Duration = time.Duration(config.TimeoutDurationHours) * time.Hour
-
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		operation := func() (string, error) {
-			err := SetRepositoryPublic(account.Token, account.Owner, repo)
-			return "", err
-		}
-
-		_, err = backoff.Retry(ctx, operation, backoff.WithBackOff(backoff.NewExponentialBackOff()))
-		if err != nil {
-			log.Printf("将仓库 %s 设置为 public 失败: %v", repo, err)
+			fails = append(fails, fmt.Sprintf("%s: %v", repo, err))
 		}
 	}
+
+	if len(fails) > 0 {
+		return fmt.Errorf("%d/%d 个仓库设置为 public 失败: %s",
+			len(fails), len(reposConfig.Repos), strings.Join(fails, "; "))
+	}
+	return nil
 }

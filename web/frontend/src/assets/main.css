@@ -1,0 +1,206 @@
+/* ============================================
+   goodBaby 设计系统
+   主色调：#66ccff 天依蓝
+   ============================================ */
+
+:root {
+  /* 品牌色板 */
+  --gb-primary: #66ccff;
+  /* 深一档的品牌色，用于浅色背景上的文字，保证可读性 */
+  --gb-primary-deep: #2b9cd8;
+  --gb-ink: #17191f;
+  --gb-ink-soft: #232630;
+  --gb-bg: #f4f6f8;
+  --gb-card: #ffffff;
+
+  /* 覆盖 Element Plus 主色 */
+  --el-color-primary: #66ccff;
+  --el-color-primary-light-3: #8cd9ff;
+  --el-color-primary-light-5: #a8e2ff;
+  --el-color-primary-light-7: #c7edff;
+  --el-color-primary-light-8: #d9f3ff;
+  --el-color-primary-light-9: #ecf9ff;
+  --el-color-primary-dark-2: #3fa9e0;
+
+  /* 圆角与阴影 */
+  --el-border-radius-base: 8px;
+  --gb-radius-card: 14px;
+  --gb-shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 8px rgb(16 24 40 / 0.05);
+  --gb-shadow-hover: 0 6px 18px rgb(16 24 40 / 0.1);
+  --gb-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+html.dark {
+  --gb-bg: #101216;
+  --gb-card: #1a1d23;
+  --gb-shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --gb-shadow-hover: 0 6px 20px rgb(0 0 0 / 0.5);
+  --el-bg-color: #1a1d23;
+  --el-bg-color-overlay: #21252d;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--gb-bg);
+  font-family:
+    'Inter', 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ---------- 通用工具类 ---------- */
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.muted {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+/* ---------- Element Plus 外观微调 ---------- */
+
+.el-card {
+  border: none;
+  border-radius: var(--gb-radius-card);
+  box-shadow: var(--gb-shadow-card);
+  transition:
+    box-shadow 0.3s var(--gb-ease),
+    transform 0.3s var(--gb-ease);
+}
+
+.el-card__header {
+  font-weight: 600;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
+}
+
+.el-button {
+  transition:
+    all 0.2s var(--gb-ease),
+    transform 0.15s var(--gb-ease);
+}
+
+/* #66ccff 底色偏浅，主按钮用深墨色文字保证对比度 */
+.el-button--primary {
+  --el-button-text-color: #0b2b3d;
+  --el-button-hover-text-color: #0b2b3d;
+  --el-button-active-text-color: #0b2b3d;
+  font-weight: 600;
+}
+
+.el-button:not(.is-disabled):active {
+  transform: scale(0.97);
+}
+
+.el-dialog {
+  border-radius: 16px;
+}
+
+.el-table {
+  --el-table-border-color: var(--el-border-color-extra-light);
+  --el-table-header-bg-color: transparent;
+}
+
+.el-table th.el-table__cell {
+  font-weight: 600;
+  color: var(--el-text-color-secondary);
+}
+
+.el-tag {
+  border-radius: 6px;
+}
+
+/* 提示条统一柔和外观 */
+.el-alert {
+  border-radius: 10px;
+}
+
+/* ---------- 页面切换动画 ---------- */
+
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity 0.22s var(--gb-ease),
+    transform 0.22s var(--gb-ease);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+/* 列表项入场 */
+@keyframes gb-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.gb-rise {
+  animation: gb-rise 0.35s var(--gb-ease) both;
+}
+
+/* 危险状态的呼吸效果 */
+@keyframes gb-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.gb-pulse {
+  animation: gb-pulse 1.6s ease-in-out infinite;
+}
+
+/* ---------- 滚动条 ---------- */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(140 145 155 / 0.35);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(140 145 155 / 0.55);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

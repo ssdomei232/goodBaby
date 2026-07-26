@@ -3,6 +3,9 @@ package ruleConfigChecker
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+
+	"github.com/ssdomei232/goodBaby/internal/meta"
 )
 
 // RuleValidator 规则验证器接口
@@ -11,6 +14,8 @@ type RuleValidator interface {
 	Validate(configJSON string) error
 	// GetType 获取验证器支持的规则类型
 	GetType() string
+	// Meta 返回给 WebUI 渲染表单用的元数据
+	Meta() meta.RuleMeta
 }
 
 // ValidatorRegistry 验证器注册表
@@ -57,5 +62,25 @@ func (vr *ValidatorRegistry) GetSupportedTypes() []string {
 	for t := range vr.validators {
 		types = append(types, t)
 	}
+	sort.Strings(types)
 	return types
+}
+
+// Metas 返回所有规则类型的元数据，按类型名排序
+func (vr *ValidatorRegistry) Metas() []meta.RuleMeta {
+	metas := make([]meta.RuleMeta, 0, len(vr.validators))
+	for _, v := range vr.validators {
+		metas = append(metas, v.Meta())
+	}
+	sort.Slice(metas, func(i, j int) bool { return metas[i].Type < metas[j].Type })
+	return metas
+}
+
+// MetaOf 返回指定规则类型的元数据
+func (vr *ValidatorRegistry) MetaOf(ruleType string) (meta.RuleMeta, bool) {
+	v, ok := vr.validators[ruleType]
+	if !ok {
+		return meta.RuleMeta{}, false
+	}
+	return v.Meta(), true
 }

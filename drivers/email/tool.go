@@ -4,113 +4,88 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"time"
 
-	"github.com/cenkalti/backoff/v5"
-	"github.com/ssdomei232/goodBaby/configs"
 	"github.com/ssdomei232/goodBaby/handler/db"
+	"github.com/ssdomei232/goodBaby/internal/retry"
 	"github.com/ssdomei232/goodBaby/model"
 	"github.com/wneessen/go-mail"
 )
 
-// 从 Rule 中获取 EmailAccount 配置
+// GetEmailAccountFromRule 从 Rule 中获取 EmailAccount 配置
 func GetEmailAccountFromRule(rule *model.Rule) (*EmailAccountConfig, error) {
-	gormDB, err := db.GetGormDB()
-	if err != nil {
-		return nil, err
-	}
-
-	// 1. 通过 account_id 获取到对应的 account 配置
-	var emailAccount model.Account
-	result := gormDB.Where("id = ?", rule.AccountID).First(&emailAccount)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	// 2. 通过 account 配置中的 config 字段获取到 EmailAccount
 	var emailAccountConfig EmailAccountConfig
-	err = json.Unmarshal([]byte(emailAccount.Config), &emailAccountConfig)
-	if err != nil {
+	if err := db.LoadAccountConfig(rule.AccountID, &emailAccountConfig); err != nil {
 		return nil, err
 	}
-
 	return &emailAccountConfig, nil
 }
 
-// 从 Rule 中获取 EmailRule 配置
+// GetEmailRuleFromRule 从 Rule 中获取 EmailRule 配置
 func GetEmailRuleFromRule(rule *model.Rule) (*EmailRule, error) {
 	var emailRule EmailRule
-	err := json.Unmarshal([]byte(rule.ConfigJson), &emailRule)
-	if err != nil {
+	if err := json.Unmarshal([]byte(rule.ConfigJson), &emailRule); err != nil {
 		return nil, err
 	}
 	return &emailRule, nil
 }
-func sendMailMsgWithRetry(rule *model.Rule, address string) {
-	config, err := configs.GetConfig()
+
+// newSMTPClient 按账号配置里的加密方式创建 SMTP 客户端
+func newSMTPClient(cfg *EmailAccountConfig) (*mail.Client, error) {
+	options := []mail.Option{
+		mail.WithPort(cfg.Port),
+		mail.WithUsername(cfg.Username),
+		mail.WithPassword(cfg.Password),
+		mail.WithSMTPAuth(mail.SMTPAuthAutoDiscover),
+	}
+
+	switch cfg.SecurityOrDefault() {
+	case SecuritySSL:
+		options = append(options, mail.WithSSL())
+	case SecuritySTARTTLS:
+		options = append(options, mail.WithTLSPolicy(mail.TLSMandatory))
+	case SecurityNone:
+		options = append(options, mail.WithTLSPolicy(mail.NoTLS))
+	}
+
+	client, err := mail.NewClient(cfg.SMTPServer, options...)
 	if err != nil {
-		log.Printf("获取配置失败: %v", err)
-		return
+		return nil, fmt.Errorf("创建邮件客户端失败: %w", err)
 	}
-	var timeout time.Duration = time.Duration(config.TimeoutDurationHours) * time.Hour
-
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	operation := func() (string, error) {
-		err := sendMailMsg(address, rule)
-		return "", err
-	}
-
-	_, err = backoff.Retry(ctx, operation, backoff.WithBackOff(backoff.NewExponentialBackOff()))
-	if err != nil {
-		log.Printf("发送邮件失败: %v", err)
-	}
+	return client, nil
 }
 
-func sendMailMsg(address string, rule *model.Rule) error {
-	emailAccountConfig, err := GetEmailAccountFromRule(rule)
-	if err != nil {
-		log.Printf("获取邮件账户配置失败: %v", err)
-		return fmt.Errorf("获取邮件账户配置失败: %v", err)
-	}
-
-	emailRule, err := GetEmailRuleFromRule(rule)
-	if err != nil {
-		log.Printf("获取邮件规则配置失败: %v", err)
-		return fmt.Errorf("获取邮件规则配置失败: %v", err)
-	}
-
-	client, err := mail.NewClient(
-		emailAccountConfig.SMTPServer,
-		mail.WithPort(emailAccountConfig.Port),
-		mail.WithSSL(),
-		mail.WithUsername(emailAccountConfig.Username),
-		mail.WithPassword(emailAccountConfig.Password),
-		mail.WithSMTPAuth(mail.SMTPAuthPlain),
-	)
-	if err != nil {
-		return fmt.Errorf("创建邮件客户端失败: %v", err)
-	}
-
-	// 创建邮件
+func buildMessage(cfg *EmailAccountConfig, address, title, body string) (*mail.Msg, error) {
 	message := mail.NewMsg()
-	if err := message.From(emailAccountConfig.Username); err != nil {
-		return fmt.Errorf("设置发件人失败: %v", err)
+	if err := message.From(cfg.FromOrDefault()); err != nil {
+		return nil, fmt.Errorf("设置发件人失败: %w", err)
 	}
-
 	if err := message.To(address); err != nil {
-		return fmt.Errorf("设置收件人失败: %v", err)
+		return nil, fmt.Errorf("设置收件人失败: %w", err)
+	}
+	message.Subject(title)
+	message.SetBodyString(mail.TypeTextPlain, body)
+	return message, nil
+}
+
+func sendMailMsgWithRetry(ctx context.Context, cfg *EmailAccountConfig, rule *EmailRule, address string) error {
+	return retry.Do(ctx, func() error {
+		return sendMailMsg(ctx, cfg, rule, address)
+	})
+}
+
+func sendMailMsg(ctx context.Context, cfg *EmailAccountConfig, rule *EmailRule, address string) error {
+	client, err := newSMTPClient(cfg)
+	if err != nil {
+		return err
 	}
 
-	message.Subject(emailRule.Title)
-	message.SetBodyString(mail.TypeTextPlain, emailRule.Msg)
-
-	// 发送邮件
-	if err := client.DialAndSend(message); err != nil {
-		return fmt.Errorf("发送邮件失败: %v", err)
+	message, err := buildMessage(cfg, address, rule.Title, rule.Msg)
+	if err != nil {
+		return err
 	}
 
+	if err := client.DialAndSendWithContext(ctx, message); err != nil {
+		return fmt.Errorf("发送邮件失败: %w", err)
+	}
 	return nil
 }

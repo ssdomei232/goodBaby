@@ -1,188 +1,236 @@
 package rule
 
 import (
+	"context"
 	"fmt"
-	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/ssdomei232/goodBaby/api/response"
 	"github.com/ssdomei232/goodBaby/api/user"
 	"github.com/ssdomei232/goodBaby/handler/db"
+	"github.com/ssdomei232/goodBaby/handler/runner"
+	"github.com/ssdomei232/goodBaby/internal/meta"
+	"github.com/ssdomei232/goodBaby/internal/retry"
 	"github.com/ssdomei232/goodBaby/internal/ruleConfigChecker"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-// 获取用户的所有规则
+// HandleGetAllRules 获取用户的所有规则，支持按 timer_id 过滤
 func HandleGetAllRules(c *gin.Context) {
-	gormDB, err := db.GetGormDB()
-	if err != nil {
-		c.JSON(500, gin.H{"code": 500, "data": "获取规则失败"})
-		return
-	}
-
 	userInfo, err := user.GetUserInfoByGinCtx(c)
 	if err != nil {
-		c.JSON(401, gin.H{"code": 401, "data": "获取用户信息失败"})
+		response.Unauthorized(c, "获取用户信息失败")
 		return
 	}
 
-	var rules []model.Rule
-	result := gormDB.Where("uid = ?", userInfo.ID).Find(&rules)
-	if result.Error != nil {
-		c.JSON(500, gin.H{"code": 500, "data": "获取规则失败"})
+	gormDB, err := db.GetGormDB()
+	if err != nil {
+		response.ServerError(c, "服务器内部错误")
 		return
 	}
 
-	c.JSON(200, gin.H{"code": 200, "data": rules})
+	query := gormDB.Where("uid = ?", userInfo.ID)
+	if raw := c.Query("timer_id"); raw != "" {
+		timerID, err := parseID(raw)
+		if err != nil {
+			response.BadRequest(c, "timer_id 格式错误")
+			return
+		}
+		query = query.Where("timer_id = ?", timerID)
+	}
+
+	rules := []model.Rule{}
+	if err := query.Order("id DESC").Find(&rules).Error; err != nil {
+		response.ServerError(c, "获取规则失败")
+		return
+	}
+
+	response.OK(c, maskRules(rules))
 }
 
-// 创建新规则
+// HandleCreateRule 创建新规则
 func HandleCreateRule(c *gin.Context) {
-	gormDB, err := db.GetGormDB()
-	if err != nil {
-		c.JSON(500, gin.H{"code": 500, "data": "服务器内部错误"})
-		return
-	}
-
 	userInfo, err := user.GetUserInfoByGinCtx(c)
 	if err != nil {
-		c.JSON(401, gin.H{"code": 401, "data": "获取用户信息失败"})
+		response.Unauthorized(c, "获取用户信息失败")
 		return
 	}
 
-	var newRule model.Rule
-	if err := c.BindJSON(&newRule); err != nil {
-		c.JSON(400, gin.H{"code": 400, "data": "输入参数错误"})
+	var req model.RuleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "输入参数错误")
 		return
 	}
 
-	if newRule.Type == "" {
-		c.JSON(400, gin.H{"code": 400, "data": "规则类型不能为空"})
+	newRule := model.Rule{
+		UID:        userInfo.ID,
+		Name:       req.Name,
+		TimerID:    req.TimerID,
+		AccountID:  req.AccountID,
+		Type:       req.Type,
+		ConfigJson: req.ConfigJson,
+		Enabled:    boolOr(req.Enabled, true),
+		CreateAt:   time.Now().Unix(),
+	}
+
+	if err := validateRule(&req, &newRule); err != nil {
+		response.FromError(c, err, "创建规则失败")
 		return
 	}
 
-	if newRule.Name == "" {
-		c.JSON(400, gin.H{"code": 400, "data": "规则名称不能为空"})
+	gormDB, err := db.GetGormDB()
+	if err != nil {
+		response.ServerError(c, "服务器内部错误")
 		return
 	}
 
-	// 检查关联账号和 Timer 是否存在(可以没有关联账号)
-	if exist, err := checkRuleConfigAccountAndTimerExist(newRule); err != nil {
-		c.JSON(500, gin.H{"code": 500, "data": "服务器内部错误"})
-		return
-	} else if !exist {
-		c.JSON(400, gin.H{"code": 400, "data": "关联的账户或Timer不存在"})
+	if err := gormDB.Create(&newRule).Error; err != nil {
+		response.ServerError(c, "创建规则失败")
 		return
 	}
 
-	// 规则校验
-	validatorRegistry := ruleConfigChecker.InitValidatorRegistry()
-	if err := validatorRegistry.Validate(newRule.Type, newRule.ConfigJson); err != nil {
-		c.JSON(400, gin.H{"code": 400, "data": fmt.Sprintf("规则配置验证失败: %s", err.Error())})
-		return
-	}
-
-	newRule.UID = userInfo.ID
-	result := gormDB.Create(&newRule)
-	if result.Error != nil {
-		c.JSON(500, gin.H{"code": 500, "data": "创建规则失败"})
-		return
-	}
-
-	c.JSON(200, gin.H{"code": 200, "data": "规则创建成功"})
+	response.OK(c, maskRule(newRule))
 }
 
-// 编辑规则
+// HandleEditRule 编辑规则
 func HandleEditRule(c *gin.Context) {
-	gormDB, err := db.GetGormDB()
-	if err != nil {
-		c.JSON(500, gin.H{"code": 500, "data": "服务器内部错误"})
-		return
-	}
-
 	userInfo, err := user.GetUserInfoByGinCtx(c)
 	if err != nil {
-		c.JSON(401, gin.H{"code": 401, "data": "获取用户信息失败"})
+		response.Unauthorized(c, "获取用户信息失败")
 		return
 	}
 
-	ruleID, err := strconv.Atoi(c.Param("ruleID"))
+	ruleID, err := parseID(c.Param("ruleID"))
 	if err != nil {
-		c.JSON(400, gin.H{"code": 400, "data": "规则 ID 格式错误"})
-		return
-	}
-	var rule model.Rule
-	result := gormDB.Where("id = ? AND uid = ?", ruleID, userInfo.ID).First(&rule)
-	if result.Error != nil {
-		c.JSON(404, gin.H{"code": 404, "data": "规则不存在"})
+		response.BadRequest(c, "规则 ID 格式错误")
 		return
 	}
 
-	var updatedRule model.Rule
-	if err := c.BindJSON(&updatedRule); err != nil {
-		c.JSON(400, gin.H{"code": 400, "data": "输入参数错误"})
+	existing, err := findRule(ruleID, userInfo.ID)
+	if err != nil {
+		response.NotFound(c, "规则不存在")
 		return
 	}
 
-	if updatedRule.Type == "" {
-		c.JSON(400, gin.H{"code": 400, "data": "规则类型不能为空"})
+	var req model.RuleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "输入参数错误")
 		return
 	}
 
-	if updatedRule.Name == "" {
-		c.JSON(400, gin.H{"code": 400, "data": "规则名称不能为空"})
+	updated := *existing
+	updated.Name = req.Name
+	updated.Type = req.Type
+	updated.TimerID = req.TimerID
+	updated.AccountID = req.AccountID
+	updated.Enabled = boolOr(req.Enabled, existing.Enabled)
+	// 前端提交的敏感字段可能是掩码占位符，用旧配置补回
+	updated.ConfigJson = unmaskRuleConfig(req.Type, req.ConfigJson, existing.ConfigJson)
+
+	req.ConfigJson = updated.ConfigJson
+	if err := validateRule(&req, &updated); err != nil {
+		response.FromError(c, err, "更新规则失败")
 		return
 	}
 
-	// 检查关联账号和 Timer 是否存在(可以没有关联账号)
-	if exist, err := checkRuleConfigAccountAndTimerExist(updatedRule); err != nil {
-		c.JSON(500, gin.H{"code": 500, "data": "服务器内部错误"})
-		return
-	} else if !exist {
-		c.JSON(400, gin.H{"code": 400, "data": "关联的账户或Timer不存在"})
+	gormDB, err := db.GetGormDB()
+	if err != nil {
+		response.ServerError(c, "服务器内部错误")
 		return
 	}
 
-	// 规则校验
-	validatorRegistry := ruleConfigChecker.InitValidatorRegistry()
-	if err := validatorRegistry.Validate(updatedRule.Type, updatedRule.ConfigJson); err != nil {
-		c.JSON(400, gin.H{"code": 400, "data": fmt.Sprintf("规则配置验证失败: %s", err.Error())})
+	if err := gormDB.Save(&updated).Error; err != nil {
+		response.ServerError(c, "更新规则失败")
 		return
 	}
 
-	rule.Name = updatedRule.Name
-	rule.Type = updatedRule.Type
-	rule.ConfigJson = updatedRule.ConfigJson
-	rule.AccountID = updatedRule.AccountID
-	rule.TimerID = updatedRule.TimerID
-
-	result = gormDB.Save(&rule)
-	if result.Error != nil {
-		c.JSON(500, gin.H{"code": 500, "data": "更新规则失败"})
-		return
-	}
-
-	c.JSON(200, gin.H{"code": 200, "data": "规则更新成功"})
+	response.OK(c, maskRule(updated))
 }
 
-// 根据删除规则
+// HandleDeleteRule 删除规则
 func HandleDeleteRule(c *gin.Context) {
 	userInfo, err := user.GetUserInfoByGinCtx(c)
 	if err != nil {
-		c.JSON(401, gin.H{"code": 401, "data": "获取用户信息失败"})
+		response.Unauthorized(c, "获取用户信息失败")
 		return
 	}
 
-	ruleID, err := strconv.Atoi(c.Param("ruleID"))
+	ruleID, err := parseID(c.Param("ruleID"))
 	if err != nil {
-		c.JSON(400, gin.H{"code": 400, "data": "规则 ID 格式错误"})
+		response.BadRequest(c, "规则 ID 格式错误")
 		return
 	}
 
-	err = DeleteRuleByID(uint(ruleID), userInfo.ID)
+	if err := DeleteRuleByID(ruleID, userInfo.ID); err != nil {
+		response.ServerError(c, "删除规则失败")
+		return
+	}
+
+	response.OK(c, "规则删除成功")
+}
+
+// HandleTestRule 立即执行一次规则用于验证配置
+//
+// 使用较短的超时，避免在 WebUI 上等待数小时的指数退避。
+func HandleTestRule(c *gin.Context) {
+	userInfo, err := user.GetUserInfoByGinCtx(c)
 	if err != nil {
-		c.JSON(500, gin.H{"code": 500, "data": "删除规则失败"})
+		response.Unauthorized(c, "获取用户信息失败")
 		return
 	}
 
-	c.JSON(200, gin.H{"code": 200, "data": "规则删除成功"})
+	ruleID, err := parseID(c.Param("ruleID"))
+	if err != nil {
+		response.BadRequest(c, "规则 ID 格式错误")
+		return
+	}
+
+	target, err := findRule(ruleID, userInfo.ID)
+	if err != nil {
+		response.NotFound(c, "规则不存在")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), retry.TestTimeout)
+	defer cancel()
+
+	if err := runner.ExecuteRuleWithContext(ctx, target, model.TriggerManual); err != nil {
+		response.BadRequest(c, fmt.Sprintf("规则执行失败: %s", err.Error()))
+		return
+	}
+
+	response.OK(c, "规则执行成功")
+}
+
+// validateRule 校验规则的通用字段、关联对象与类型专属配置
+func validateRule(req *model.RuleRequest, rule *model.Rule) error {
+	if err := req.Validate(); err != nil {
+		return err
+	}
+
+	ruleMeta, ok := ruleConfigChecker.InitValidatorRegistry().MetaOf(req.Type)
+	if !ok {
+		return model.ErrValidation(fmt.Sprintf("不支持的规则类型: %s", req.Type))
+	}
+
+	// 检查关联的 Timer 与账号是否存在且属于当前用户
+	if err := checkRuleConfigAccountAndTimerExist(rule, ruleMeta.AccountType); err != nil {
+		return err
+	}
+
+	if err := ruleConfigChecker.InitValidatorRegistry().Validate(req.Type, rule.ConfigJson); err != nil {
+		return model.ErrValidation(fmt.Sprintf("规则配置验证失败: %s", err.Error()))
+	}
+
+	return nil
+}
+
+// unmaskRuleConfig 把提交上来的掩码字段还原成旧值
+func unmaskRuleConfig(ruleType, newConfig, oldConfig string) string {
+	ruleMeta, ok := ruleConfigChecker.InitValidatorRegistry().MetaOf(ruleType)
+	if !ok {
+		return newConfig
+	}
+	return meta.Unmask(newConfig, oldConfig, ruleMeta.Fields)
 }

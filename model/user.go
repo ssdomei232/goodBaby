@@ -1,21 +1,29 @@
 package model
 
-import (
-	"fmt"
-
-	"github.com/ssdomei232/goodBaby/handler/db"
-)
+import "fmt"
 
 type UserRegistryReuest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
+// ChangePasswordRequest 修改密码请求
+type ChangePasswordRequest struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
+// NotifyConfigRequest 修改提醒渠道配置的请求
+type NotifyConfigRequest struct {
+	DingTalkConfig *string `json:"dingtalk_config"`
+}
+
 type User struct {
-	ID             uint    `json:"id" gorm:"primaryKey"`
-	CreateAt       int64   `json:"create_at"`
-	Username       string  `json:"username"`
-	Password       string  `json:"-"`
+	ID       uint   `json:"id" gorm:"primaryKey"`
+	CreateAt int64  `json:"create_at"`
+	Username string `gorm:"uniqueIndex" json:"username"`
+	Password string `json:"-"`
+	// 钉钉机器人配置(JSON 字符串)，用于接收提醒
 	DingTalkConfig *string `json:"dingtalk_config"`
 }
 
@@ -30,19 +38,4 @@ func (u *User) IsValid() error {
 		return fmt.Errorf("密码过长或过短")
 	}
 	return nil
-}
-
-func (u *User) IsExist() bool {
-	db, err := db.GetGormDB()
-	if err != nil {
-		return false
-	}
-
-	var count int64
-	result := db.Where("username = ?", u.Username).Count(&count)
-	if result.Error != nil {
-		return false
-	}
-
-	return count > 0
 }

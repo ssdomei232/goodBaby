@@ -3,55 +3,36 @@ package github
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 
 	"github.com/google/go-github/v84/github"
 	"github.com/ssdomei232/goodBaby/handler/db"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-// 从 rule 中获取 GithubReposConfig 和 GithubAccount
-func GetGithubReposAndAccountFromRule(rule *model.Rule) (*GithubReposConfig, *GithubAccount) {
+// GetGithubReposAndAccountFromRule 从 rule 中获取 GithubReposConfig 和 GithubAccount
+func GetGithubReposAndAccountFromRule(rule *model.Rule) (*GithubReposConfig, *GithubAccount, error) {
 	var githubReposConfig GithubReposConfig
+	if err := json.Unmarshal([]byte(rule.ConfigJson), &githubReposConfig); err != nil {
+		return nil, nil, fmt.Errorf("解析 GitHub 规则配置失败: %w", err)
+	}
+
 	var githubAccount GithubAccount
-
-	// 获取 GithubReposConfig
-	err := json.Unmarshal([]byte(rule.ConfigJson), &githubReposConfig)
-	if err != nil {
-		log.Printf("获取 GitHub 配置失败: %v", err)
-		return nil, nil
+	if err := db.LoadAccountConfig(rule.AccountID, &githubAccount); err != nil {
+		return nil, nil, err
 	}
 
-	// 获取 GithubAccount
-	gormDB, err := db.GetGormDB()
-	if err != nil {
-		log.Printf("获取 Gorm DB 失败: %v", err)
-		return nil, nil
-	}
-
-	err = gormDB.Where("id = ?", rule.AccountID).First(&githubAccount).Error
-	if err != nil {
-		log.Printf("获取 GitHub 账户失败: %v", err)
-		return nil, nil
-	}
-
-	return &githubReposConfig, &githubAccount
+	return &githubReposConfig, &githubAccount, nil
 }
 
-// 将仓库设置为 public
-func SetRepositoryPublic(token, owner, repo string) error {
-	ctx := context.Background()
-
-	// 1. 初始化客户端
+// SetRepositoryPublic 将仓库设置为 public
+func SetRepositoryPublic(ctx context.Context, token, owner, repo string) error {
 	client := github.NewClient(nil).WithAuthToken(token)
 
-	// 2. 准备修改的参数
 	opts := &github.Repository{
 		Visibility: github.Ptr("public"),
 	}
 
-	// 3. 执行更新操作
 	_, _, err := client.Repositories.Edit(ctx, owner, repo, opts)
-
 	return err
 }

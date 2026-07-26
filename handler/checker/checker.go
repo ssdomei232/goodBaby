@@ -10,9 +10,9 @@ import (
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-// 定时检查所有 timers 是否需要被触发
+// CheckTimers 定时检查所有 timers 是否需要被触发
 //
-// 同时向即将被触发的 timers 发送通知
+// 同时向即将到期的 timers 对应的用户发送提醒
 func CheckTimers() {
 	gormDB, err := db.GetGormDB()
 	if err != nil {
@@ -20,32 +20,39 @@ func CheckTimers() {
 		return
 	}
 
-	// 1. 获取所有 timers
+	// 1. 获取所有启用中的 timers
 	var timers []model.Timer
-	if err := gormDB.Find(&timers).Error; err != nil {
+	if err := gormDB.Where("enabled = ?", true).Find(&timers).Error; err != nil {
 		log.Printf("failed to get timers: %v", err)
 		return
 	}
 
-	// 2. 检查每个 timer 是否需要被触发
-	for _, timer := range timers {
-		// 计算下次触发时间
-		nextSignTime := timer.LastSign + timer.SignDerationSeconds
+	currentTime := time.Now().Unix()
 
-		// 计算提醒时间
-		remindTime := nextSignTime - timer.RemindTimeSeconds
+	// 2. 检查每个 timer 是否需要被提醒或触发
+	for i := range timers {
+		timer := timers[i]
 
-		// 获取当前时间
-		currentTime := time.Now().Unix()
-
-		if currentTime >= remindTime && currentTime < nextSignTime {
-			// 发送通知
-			reminder.Reminder(&timer)
+		// 已触发过的 timer 在用户重新签到之前不再处理
+		if timer.Triggered {
+			continue
 		}
 
+		nextSignTime := timer.NextSignTime()
+		remindTime := timer.RemindAt()
+
 		if currentTime >= nextSignTime {
-			// 触发 timer
 			runner.Runner(&timer)
+			continue
+		}
+
+		// 每个签到周期只提醒一次
+		if currentTime >= remindTime && timer.LastRemind < remindTime {
+			reminder.Reminder(&timer)
+			if err := gormDB.Model(&model.Timer{}).Where("id = ?", timer.ID).
+				Update("last_remind", currentTime).Error; err != nil {
+				log.Printf("更新 Timer(ID: %d) 提醒时间失败: %v", timer.ID, err)
+			}
 		}
 	}
 }

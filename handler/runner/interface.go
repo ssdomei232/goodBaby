@@ -1,9 +1,13 @@
 package runner
 
 import (
+	"context"
 	"fmt"
+	"sort"
+	"sync"
 
 	"github.com/ssdomei232/goodBaby/drivers/bilibili"
+	"github.com/ssdomei232/goodBaby/drivers/dingtalk"
 	"github.com/ssdomei232/goodBaby/drivers/email"
 	"github.com/ssdomei232/goodBaby/drivers/github"
 	"github.com/ssdomei232/goodBaby/drivers/onebot"
@@ -12,8 +16,8 @@ import (
 
 // RuleExecutor 规则执行器接口
 type RuleExecutor interface {
-	// Execute 执行规则
-	Execute(rule *model.Rule) error
+	// Execute 执行规则，ctx 决定了重试的最长时间
+	Execute(ctx context.Context, rule *model.Rule) error
 	// GetType 获取执行器支持的规则类型
 	GetType() string
 }
@@ -36,13 +40,13 @@ func (er *ExecutorRegistry) Register(executor RuleExecutor) {
 }
 
 // Execute 根据规则类型执行规则
-func (er *ExecutorRegistry) Execute(rule *model.Rule) error {
+func (er *ExecutorRegistry) Execute(ctx context.Context, rule *model.Rule) error {
 	executor, exists := er.executors[rule.Type]
 	if !exists {
 		return fmt.Errorf("不支持的规则类型: %s", rule.Type)
 	}
 
-	return executor.Execute(rule)
+	return executor.Execute(ctx, rule)
 }
 
 // GetSupportedTypes 获取所有支持的规则类型
@@ -51,24 +55,31 @@ func (er *ExecutorRegistry) GetSupportedTypes() []string {
 	for t := range er.executors {
 		types = append(types, t)
 	}
+	sort.Strings(types)
 	return types
 }
 
-var globalExecutorRegistry *ExecutorRegistry
+var (
+	registryOnce           sync.Once
+	globalExecutorRegistry *ExecutorRegistry
+)
 
 // InitExecutorRegistry 初始化执行器注册表并注册所有执行器
 func InitExecutorRegistry() *ExecutorRegistry {
-	registry := NewExecutorRegistry()
+	registryOnce.Do(func() {
+		registry := NewExecutorRegistry()
 
-	// 注册所有规则执行器
-	registry.Register(&bilibili.BilibiliDynamicExecutor{})
-	registry.Register(&email.EmailExecutor{})
-	registry.Register(&github.GithubMakeRepoPublicExecutor{})
-	registry.Register(&onebot.OneBotExecutor{})
-	// 未来添加新规则类型时，在这里注册即可
+		// 注册所有规则执行器
+		registry.Register(&bilibili.BilibiliDynamicExecutor{})
+		registry.Register(&email.EmailExecutor{})
+		registry.Register(&github.GithubMakeRepoPublicExecutor{})
+		registry.Register(&onebot.OneBotExecutor{})
+		registry.Register(&dingtalk.DingTalkExecutor{})
+		// 未来添加新规则类型时，在这里注册即可
 
-	globalExecutorRegistry = registry
-	return registry
+		globalExecutorRegistry = registry
+	})
+	return globalExecutorRegistry
 }
 
 // GetGlobalExecutorRegistry 获取全局执行器注册表

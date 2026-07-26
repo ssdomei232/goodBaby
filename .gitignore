@@ -24,3 +24,12 @@ go.work
 goodBaby
 config.json
 data.db
+data.db-shm
+data.db-wal
+/data/
+
+# ---> Frontend
+node_modules/
+# 前端构建产物不入库，仅保留 .gitkeep 以满足 go:embed
+web/dist/*
+!web/dist/.gitkeep

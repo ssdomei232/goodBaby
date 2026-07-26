@@ -2,55 +2,40 @@ package bilibili
 
 import (
 	"context"
-	"log"
-	"time"
+	"fmt"
 
 	"github.com/CuteReimu/bilibili/v2"
-	"github.com/cenkalti/backoff/v5"
-	"github.com/ssdomei232/goodBaby/configs"
+	"github.com/ssdomei232/goodBaby/internal/retry"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-// 在Bilibili动态发送消息
+// SendBiliDynamicMsg 在 Bilibili 动态发送消息
 //
 // 暂时没有处理 429 和 403 的区别对待
-func SendBiliDynamicMsg(rule *model.Rule) {
-	config, err := configs.GetConfig()
-	if err != nil {
-		log.Printf("获取配置失败: %v", err)
-		return
-	}
-	var timeout time.Duration = time.Duration(config.TimeoutDurationHours) * time.Hour
-
+func SendBiliDynamicMsg(ctx context.Context, rule *model.Rule) error {
 	biliClient, err := getBiliClient(rule)
 	if err != nil {
-		log.Printf("获取B站客户端失败: %v", err)
-		return
-	}
-	biliDyncmicConfig, err := getBiliDynamicConfig(rule)
-	if err != nil {
-		log.Printf("获取B站动态配置失败: %v", err)
-		return
+		return fmt.Errorf("获取B站客户端失败: %w", err)
 	}
 
-	var dynamicParams bilibili.CreateDynamicParam
-	dynamicParams = bilibili.CreateDynamicParam{
+	biliDynamicConfig, err := getBiliDynamicConfig(rule)
+	if err != nil {
+		return fmt.Errorf("获取B站动态配置失败: %w", err)
+	}
+
+	dynamicParams := bilibili.CreateDynamicParam{
 		DynamicId: 0,
 		Type:      4,
 		Rid:       0,
-		Content:   biliDyncmicConfig.Msg,
+		Content:   biliDynamicConfig.Msg,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
-
-	operation := func() (string, error) {
+	if err := retry.Do(ctx, func() error {
 		_, err := biliClient.CreateDynamic(dynamicParams)
-		return "", err
+		return err
+	}); err != nil {
+		return fmt.Errorf("发送B站动态失败: %w", err)
 	}
 
-	_, err = backoff.Retry(ctx, operation, backoff.WithBackOff(backoff.NewExponentialBackOff()))
-	if err != nil {
-		log.Printf("发送B站动态失败: %v", err)
-	}
+	return nil
 }

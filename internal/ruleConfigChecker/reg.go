@@ -1,6 +1,8 @@
 package ruleConfigChecker
 
 import (
+	"sync"
+
 	"github.com/ssdomei232/goodBaby/drivers/bilibili"
 	"github.com/ssdomei232/goodBaby/drivers/dingtalk"
 	"github.com/ssdomei232/goodBaby/drivers/email"
@@ -8,16 +10,24 @@ import (
 	"github.com/ssdomei232/goodBaby/drivers/onebot"
 )
 
-// InitValidatorRegistry 初始化验证器注册表并注册所有验证器
+var (
+	once     sync.Once
+	registry *ValidatorRegistry
+)
+
+// InitValidatorRegistry 返回全局唯一的规则验证器注册表
 func InitValidatorRegistry() *ValidatorRegistry {
-	registry := NewValidatorRegistry()
+	once.Do(func() {
+		r := NewValidatorRegistry()
 
-	// 注册所有规则验证器
-	registry.Register(&bilibili.BilibiliDynamicRuleValidator{})
-	registry.Register(&email.EmailRuleValidator{})
-	registry.Register(&onebot.OneBotRuleValidator{})
-	registry.Register(&dingtalk.DingTalkRuleValidator{})
-	registry.Register(&github.GithubMakeRepositoryPublicRuleValidator{})
+		// 注册所有规则验证器
+		r.Register(&bilibili.BilibiliDynamicRuleValidator{})
+		r.Register(&email.EmailRuleValidator{})
+		r.Register(&onebot.OneBotRuleValidator{})
+		r.Register(&dingtalk.DingTalkRuleValidator{})
+		r.Register(&github.GithubMakeRepositoryPublicRuleValidator{})
 
+		registry = r
+	})
 	return registry
 }

@@ -1,18 +1,13 @@
 services:
   goodbaby:
-    image: mei232/goodbaby:v2.0.1
+    image: mei232/goodbaby:v2.1.0
+    build: .
     ports:
       - "8088:8088"
     environment:
       - TZ=Asia/Shanghai
       - GIN_MODE=release
     restart: unless-stopped
-    networks:
-      - app-network
     volumes:
-      - ./config.json:/app/config.json:ro
-      - ./data.db:/app/data.db:ro
-
-networks:
-  app-network:
-    driver: bridge
+      # sqlite 需要写权限，config.json 首次启动会自动生成，不能挂成只读
+      - ./data:/app/data

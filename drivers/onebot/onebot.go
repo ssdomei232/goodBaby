@@ -2,41 +2,50 @@ package onebot
 
 import (
 	"context"
-	"log"
-	"time"
+	"fmt"
+	"strings"
 
-	"github.com/cenkalti/backoff/v5"
-	"github.com/ssdomei232/goodBaby/configs"
+	"github.com/ssdomei232/goodBaby/internal/retry"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-func SendOneBotMsg(rule *model.Rule) {
-	oneBotConfig := getOneBotConfigFromRule(rule)
+// SendOneBotMsg 向规则中配置的群和好友发送消息
+func SendOneBotMsg(ctx context.Context, rule *model.Rule) error {
+	oneBotConfig, err := getOneBotConfigFromRule(rule)
+	if err != nil {
+		return err
+	}
+
 	oneBotAccount, err := getOneBotAccountFromRule(rule)
 	if err != nil {
-		log.Printf("获取OneBot账户失败: %v", err)
-		return
+		return fmt.Errorf("获取OneBot账户失败: %w", err)
 	}
+
+	var fails []string
+	total := 0
 
 	for _, groupID := range oneBotConfig.SendGroups {
-		config, err := configs.GetConfig()
+		total++
+		err := retry.Do(ctx, func() error {
+			return sendGroupMsg(oneBotAccount, groupID, oneBotConfig.Msg)
+		})
 		if err != nil {
-			log.Printf("获取配置失败: %v", err)
-			return
-		}
-		var timeout time.Duration = time.Duration(config.TimeoutDurationHours) * time.Hour
-
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		operation := func() (string, error) {
-			err := sendOneBotMsg(oneBotAccount, groupID, oneBotConfig.Msg)
-			return "", err
-		}
-
-		_, err = backoff.Retry(ctx, operation, backoff.WithBackOff(backoff.NewExponentialBackOff()))
-		if err != nil {
-			log.Printf("发送OneBot消息失败: %v", err)
+			fails = append(fails, fmt.Sprintf("群 %d: %v", groupID, err))
 		}
 	}
+
+	for _, userID := range oneBotConfig.SendUsers {
+		total++
+		err := retry.Do(ctx, func() error {
+			return sendPrivateMsg(oneBotAccount, userID, oneBotConfig.Msg)
+		})
+		if err != nil {
+			fails = append(fails, fmt.Sprintf("好友 %d: %v", userID, err))
+		}
+	}
+
+	if len(fails) > 0 {
+		return fmt.Errorf("%d/%d 条消息发送失败: %s", len(fails), total, strings.Join(fails, "; "))
+	}
+	return nil
 }
