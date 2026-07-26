@@ -66,13 +66,32 @@ cd web/frontend && npm run dev
 | `enable_registry` | `true` | 是否开放注册（系统无用户时始终允许注册第一个账号） |
 | `timeout_duration_hours` | `6` | 规则执行失败后指数退避重试的最长时间(小时) |
 | `check_interval_minutes` | `10` | 检查定时器的间隔(分钟) |
+| `database_driver` | `sqlite` | 数据库驱动，`sqlite` 或 `postgres` |
 | `database_path` | `data.db` | sqlite 数据库路径 |
+| `database_dsn` | 空 | postgres 连接串，见 [docs/database.md](docs/database.md) |
 | `session_secret` | 自动生成 | 会话加密密钥，自动生成并持久化 |
 | `session_max_age_hours` | `168` | 会话有效期(小时) |
 | `allowed_origins` | `[]` | 允许跨域的来源，前端本地开发时可填 `["http://localhost:5173"]` |
 | `log_retain_count` | `500` | 每个用户保留的执行日志条数 |
 
-环境变量覆盖：`GOODBABY_CONFIG`(配置文件路径)、`GOODBABY_LISTEN_ADDR`、`GOODBABY_DB_PATH`、`GOODBABY_SESSION_SECRET`、`GOODBABY_ENABLE_REGISTRY`。
+环境变量覆盖：`GOODBABY_CONFIG`(配置文件路径)、`GOODBABY_LISTEN_ADDR`、`GOODBABY_DB_DRIVER`、`GOODBABY_DB_PATH`、`GOODBABY_DB_DSN`、`GOODBABY_SESSION_SECRET`、`GOODBABY_ENABLE_REGISTRY`。
+
+### 管理员后台
+
+**第一个注册的用户自动成为管理员**（老版本升级上来时，注册最早的用户会被自动提升）。
+
+管理员在「设置」页面会多出一个「系统配置」区块，可以直接修改并立即生效，无需重启：
+
+* 开放注册
+* 检查间隔（保存后会自动重排定时任务）
+* 规则重试时长
+* 日志保留条数
+
+监听地址、数据库、会话密钥这类启动项不在后台开放，只能改配置文件。
+
+## 数据库
+
+默认 SQLite，可选 PostgreSQL，详见 [docs/database.md](docs/database.md)。
 
 ## 驱动配置
 

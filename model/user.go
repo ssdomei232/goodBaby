@@ -23,6 +23,8 @@ type User struct {
 	CreateAt int64  `json:"create_at"`
 	Username string `gorm:"uniqueIndex" json:"username"`
 	Password string `json:"-"`
+	// 管理员可以修改系统配置。第一个注册的用户自动成为管理员。
+	IsAdmin bool `gorm:"default:false" json:"is_admin"`
 	// 钉钉机器人配置(JSON 字符串)，用于接收提醒
 	DingTalkConfig *string `json:"dingtalk_config"`
 }

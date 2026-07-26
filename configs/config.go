@@ -25,8 +25,13 @@ type Config struct {
 	TimeoutDurationHours int `json:"timeout_duration_hours"`
 	// 检查 timer 的间隔(分钟)
 	CheckIntervalMinutes int `json:"check_interval_minutes"`
-	// sqlite 数据库文件路径
+	// 数据库驱动，"sqlite"(默认) 或 "postgres"
+	DatabaseDriver string `json:"database_driver"`
+	// sqlite 数据库文件路径，DatabaseDriver 为 sqlite 时使用
 	DatabasePath string `json:"database_path"`
+	// postgres 连接串，DatabaseDriver 为 postgres 时使用
+	// 例如 postgres://user:pass@localhost:5432/goodbaby?sslmode=disable
+	DatabaseDSN string `json:"database_dsn"`
 	// session 加密密钥，为空时自动生成并写回配置文件
 	SessionSecret string `json:"session_secret"`
 	// session 有效期(小时)
@@ -37,12 +42,19 @@ type Config struct {
 	LogRetainCount int `json:"log_retain_count"`
 }
 
+// 支持的数据库驱动
+const (
+	DriverSQLite   = "sqlite"
+	DriverPostgres = "postgres"
+)
+
 func defaultConfig() Config {
 	return Config{
 		ListenAddr:           ":8088",
 		EnableRegistry:       true,
 		TimeoutDurationHours: 6,
 		CheckIntervalMinutes: 10,
+		DatabaseDriver:       DriverSQLite,
 		DatabasePath:         "data.db",
 		SessionMaxAgeHours:   24 * 7,
 		AllowedOrigins:       []string{},
@@ -135,6 +147,9 @@ func normalize(c *Config) bool {
 	if c.DatabasePath == "" {
 		c.DatabasePath, changed = def.DatabasePath, true
 	}
+	if c.DatabaseDriver == "" {
+		c.DatabaseDriver, changed = def.DatabaseDriver, true
+	}
 	if c.SessionMaxAgeHours <= 0 {
 		c.SessionMaxAgeHours, changed = def.SessionMaxAgeHours, true
 	}
@@ -154,6 +169,16 @@ func applyEnvOverrides(c *Config) {
 	}
 	if v := os.Getenv("GOODBABY_DB_PATH"); v != "" {
 		c.DatabasePath = v
+	}
+	if v := os.Getenv("GOODBABY_DB_DRIVER"); v != "" {
+		c.DatabaseDriver = v
+	}
+	if v := os.Getenv("GOODBABY_DB_DSN"); v != "" {
+		c.DatabaseDSN = v
+		// 给了连接串却没显式指定驱动时，按 postgres 处理
+		if os.Getenv("GOODBABY_DB_DRIVER") == "" {
+			c.DatabaseDriver = DriverPostgres
+		}
 	}
 	if v := os.Getenv("GOODBABY_SESSION_SECRET"); v != "" {
 		c.SessionSecret = v

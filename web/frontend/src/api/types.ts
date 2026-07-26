@@ -9,6 +9,7 @@ export interface UserInfo {
   id: number
   create_at: number
   username: string
+  is_admin: boolean
   dingtalk_config: string | null
 }
 
@@ -151,6 +152,23 @@ export interface SiteInfo {
   enable_registry: boolean
   need_initial_user: boolean
   check_interval_minutes: number
+}
+
+/** 管理员可在 WebUI 修改的系统配置 */
+export interface AdminConfig {
+  enable_registry: boolean
+  timeout_duration_hours: number
+  check_interval_minutes: number
+  log_retain_count: number
+}
+
+export interface AdminConfigResponse {
+  config: AdminConfig
+  /** 只读的运行时信息，只能改配置文件 */
+  readonly: {
+    listen_addr: string
+    database_driver: string
+  }
 }
 
 /** 后端对 secret 字段的掩码占位符，原样提交时表示保留旧值 */

@@ -42,6 +42,8 @@ func HandleRegistry(c *gin.Context) {
 	user := model.User{
 		Username: registryRequest.Username,
 		Password: registryRequest.Password,
+		// 第一个注册的用户是管理员
+		IsAdmin: userCount == 0,
 	}
 
 	if err := user.IsValid(); err != nil {
@@ -225,6 +227,22 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		c.Set(contextKey, user)
+		c.Next()
+	}
+}
+
+// AdminMiddleware 要求当前用户是管理员，需挂在 AuthMiddleware 之后
+func AdminMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userInfo, err := GetUserInfoByGinCtx(c)
+		if err != nil {
+			response.AbortWith(c, http.StatusUnauthorized, "未登录")
+			return
+		}
+		if !userInfo.IsAdmin {
+			response.AbortWith(c, http.StatusForbidden, "需要管理员权限")
+			return
+		}
 		c.Next()
 	}
 }

@@ -2,6 +2,8 @@ import { api } from './client'
 import type {
   Account,
   AccountRequest,
+  AdminConfig,
+  AdminConfigResponse,
   DashboardOverview,
   ExecutionLog,
   LogPage,
@@ -77,6 +79,11 @@ export const logApi = {
   list: (params: { page?: number; page_size?: number; rule_id?: number; success?: string }) =>
     api.get<LogPage>('/logs/', params),
   clear: () => api.delete<string>('/logs/'),
+}
+
+export const adminApi = {
+  getConfig: () => api.get<AdminConfigResponse>('/admin/config'),
+  updateConfig: (body: AdminConfig) => api.put<AdminConfig>('/admin/config', body),
 }
 
 export type { ExecutionLog }

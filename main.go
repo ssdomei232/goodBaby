@@ -1,15 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/robfig/cron/v3"
 	"github.com/ssdomei232/goodBaby/api/account"
+	"github.com/ssdomei232/goodBaby/api/admin"
 	"github.com/ssdomei232/goodBaby/api/dashboard"
 	apilog "github.com/ssdomei232/goodBaby/api/log"
 	apimeta "github.com/ssdomei232/goodBaby/api/meta"
@@ -17,9 +16,9 @@ import (
 	"github.com/ssdomei232/goodBaby/api/timer"
 	"github.com/ssdomei232/goodBaby/api/user"
 	"github.com/ssdomei232/goodBaby/configs"
-	"github.com/ssdomei232/goodBaby/handler/checker"
 	"github.com/ssdomei232/goodBaby/handler/db"
 	"github.com/ssdomei232/goodBaby/handler/runner"
+	"github.com/ssdomei232/goodBaby/handler/scheduler"
 	"github.com/ssdomei232/goodBaby/web"
 )
 
@@ -38,13 +37,11 @@ func main() {
 	db.MustInit()
 	runner.InitExecutorRegistry()
 
-	// 启动定时检查
-	c := cron.New()
-	spec := fmt.Sprintf("@every %dm", config.CheckIntervalMinutes)
-	if _, err := c.AddFunc(spec, checker.CheckTimers); err != nil {
-		log.Fatalf("注册定时任务失败: %v", err)
+	// 启动定时检查（间隔可由管理员在 WebUI 调整，无需重启）
+	if err := scheduler.Start(config.CheckIntervalMinutes); err != nil {
+		log.Fatalf("启动定时任务失败: %v", err)
 	}
-	c.Start()
+	defer scheduler.Stop()
 
 	r := gin.Default()
 
@@ -121,6 +118,14 @@ func main() {
 		{
 			logs.GET("/", apilog.HandleGetLogs)
 			logs.DELETE("/", apilog.HandleClearLogs)
+		}
+
+		// 仅管理员可用
+		adminGroup := authorized.Group("/admin")
+		adminGroup.Use(user.AdminMiddleware())
+		{
+			adminGroup.GET("/config", admin.HandleGetConfig)
+			adminGroup.PUT("/config", admin.HandleUpdateConfig)
 		}
 	}
 
