@@ -59,6 +59,7 @@ body,
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   margin-bottom: 20px;
 }
 
@@ -203,4 +204,111 @@ body,
 
 ::-webkit-scrollbar-track {
   background: transparent;
+}
+
+/* ============================================
+   移动端适配 (<= 768px)
+   ============================================ */
+
+@media (max-width: 768px) {
+  /* 页头改为纵向排列，标题与操作按钮各占一行 */
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .page-header h2 {
+    font-size: 19px;
+  }
+
+  /* 页头里的按钮组撑满一行，方便单手点击 */
+  .page-header .el-button,
+  .page-header .el-select,
+  .page-header .el-input {
+    width: 100%;
+  }
+
+  /* 圆形图标按钮不参与拉伸 */
+  .page-header .el-button.is-circle {
+    width: 34px;
+    flex: none;
+  }
+
+  /* 对话框贴合屏幕，避免固定 px 宽度溢出 */
+  .el-dialog {
+    --el-dialog-width: 92vw !important;
+    width: 92vw !important;
+    max-width: 92vw;
+    margin-top: 8vh !important;
+    border-radius: 14px;
+  }
+
+  .el-dialog__body {
+    max-height: 66vh;
+    overflow-y: auto;
+    padding: 16px 18px;
+  }
+
+  .el-dialog__footer .el-button {
+    min-width: 88px;
+  }
+
+  /* 确认弹窗同样收窄 */
+  .el-message-box {
+    width: 90vw !important;
+    max-width: 90vw;
+  }
+
+  /* 消息提示避开顶栏 */
+  .el-message {
+    min-width: 0;
+    width: calc(100vw - 32px);
+  }
+
+  /* 表单标签改为顶部对齐，横向空间太窄放不下 */
+  .el-form--label-top .el-form-item__label {
+    padding-bottom: 4px;
+  }
+
+  /* 卡片内边距收紧 */
+  .el-card__body {
+    padding: 16px;
+  }
+
+  /* 下拉菜单项加大点击区域 */
+  .el-dropdown-menu__item {
+    padding: 10px 18px;
+  }
+
+  /* 输入字号不小于 16px，否则 iOS Safari 聚焦时会自动放大整个页面 */
+  .el-input__inner,
+  .el-textarea__inner,
+  .el-select__input {
+    font-size: 16px;
+  }
+
+  /* 表格横向滚动更顺滑，并收紧内边距塞下更多列 */
+  .el-table__body-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .el-table .cell {
+    padding: 0 8px;
+  }
+
+  .el-table .el-button + .el-button {
+    margin-left: 6px;
+  }
+}
+
+/* 超窄屏(<=380px)进一步压缩 */
+@media (max-width: 380px) {
+  .el-card__body {
+    padding: 14px;
+  }
+
+  .page-header h2 {
+    font-size: 18px;
+  }
 }

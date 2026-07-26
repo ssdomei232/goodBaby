@@ -5,6 +5,9 @@ import { userApi } from '@/api'
 import { ApiError } from '@/api/client'
 import { useUserStore } from '@/stores/user'
 import { formatDateTime } from '@/utils/format'
+import { useIsMobile } from '@/composables/useBreakpoint'
+
+const isMobile = useIsMobile()
 
 const userStore = useUserStore()
 
@@ -123,7 +126,7 @@ onMounted(async () => {
         定时器临近到期时，通过钉钉自定义机器人提醒你签到。在钉钉群里添加“自定义机器人”，把
         Webhook 中的 access_token 填到下面；如果机器人开启了“加签”，还需要填写 Secret。
       </p>
-      <el-form label-width="130px" style="max-width: 560px">
+      <el-form :label-width="isMobile ? 'auto' : '130px'" :label-position="isMobile ? 'top' : 'right'" style="max-width: 560px">
         <el-form-item label="启用钉钉提醒">
           <el-switch v-model="dingtalk.enabled" />
         </el-form-item>
@@ -143,7 +146,7 @@ onMounted(async () => {
 
     <el-card class="section">
       <template #header>修改密码</template>
-      <el-form label-width="130px" style="max-width: 560px">
+      <el-form :label-width="isMobile ? 'auto' : '130px'" :label-position="isMobile ? 'top' : 'right'" style="max-width: 560px">
         <el-form-item label="原密码" required>
           <el-input v-model="passwordForm.old" type="password" show-password />
         </el-form-item>

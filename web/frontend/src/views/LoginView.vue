@@ -261,10 +261,36 @@ async function submit() {
   margin-top: 20px;
 }
 
-/* 窄屏时隐藏左侧介绍 */
+/* 窄屏时隐藏左侧介绍，登录框居中占满 */
 @media (max-width: 860px) {
   .intro {
     display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-page {
+    /* 移动浏览器地址栏会挤压 100%，用 dvh 保证真实可视高度 */
+    min-height: 100dvh;
+  }
+
+  .panel {
+    padding: 24px 20px;
+    align-items: flex-start;
+    padding-top: 12vh;
+  }
+
+  .panel-card {
+    max-width: none;
+  }
+
+  .panel-title {
+    font-size: 23px;
+  }
+
+  /* 输入框放大到 16px，避免 iOS Safari 聚焦时自动缩放页面 */
+  .panel :deep(.el-input__inner) {
+    font-size: 16px;
   }
 }
 </style>

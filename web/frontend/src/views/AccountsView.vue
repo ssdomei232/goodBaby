@@ -8,6 +8,9 @@ import type { Account } from '@/api/types'
 import { useMetaStore } from '@/stores/meta'
 import { formatDateTime } from '@/utils/format'
 import ConfigForm from '@/components/ConfigForm.vue'
+import { useIsMobile } from '@/composables/useBreakpoint'
+
+const isMobile = useIsMobile()
 
 const metaStore = useMetaStore()
 
@@ -138,17 +141,18 @@ onMounted(async () => {
     </el-empty>
 
     <el-card v-else class="gb-rise">
-    <el-table :data="accounts">
-      <el-table-column prop="name" label="名称" min-width="140" />
-      <el-table-column label="类型" width="160">
+    <el-table :data="accounts" :size="isMobile ? 'small' : 'default'">
+      <el-table-column prop="name" label="名称" min-width="110" />
+      <el-table-column label="类型" :width="isMobile ? 110 : 160">
         <template #default="{ row }">
           <el-tag>{{ metaStore.accountLabel(row.type) }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" width="180">
+      <!-- 窄屏隐藏创建时间，优先保证操作列可见 -->
+      <el-table-column v-if="!isMobile" label="创建时间" width="180">
         <template #default="{ row }">{{ formatDateTime(row.create_at) }}</template>
       </el-table-column>
-      <el-table-column label="操作" width="260">
+      <el-table-column label="操作" :width="isMobile ? 210 : 260" fixed="right">
         <template #default="{ row }">
           <el-button
             v-if="metaStore.accountMeta(row.type)?.testable"
@@ -168,7 +172,7 @@ onMounted(async () => {
 
     <!-- 创建/编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="520px">
-      <el-form label-width="110px">
+      <el-form :label-width="isMobile ? 'auto' : '110px'" :label-position="isMobile ? 'top' : 'right'">
         <el-form-item label="账号名称" required>
           <el-input v-model="form.name" placeholder="给这个账号起个名字" maxlength="64" />
         </el-form-item>

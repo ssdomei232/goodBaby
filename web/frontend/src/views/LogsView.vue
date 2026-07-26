@@ -6,6 +6,9 @@ import { logApi } from '@/api'
 import { ApiError } from '@/api/client'
 import type { ExecutionLog } from '@/api/types'
 import { formatDateTime } from '@/utils/format'
+import { useIsMobile } from '@/composables/useBreakpoint'
+
+const isMobile = useIsMobile()
 
 const logs = ref<ExecutionLog[]>([])
 const total = ref(0)
@@ -72,7 +75,7 @@ onMounted(refresh)
         <div class="muted">规则执行与提醒的历史记录</div>
       </div>
       <div class="header-tools">
-        <el-select v-model="successFilter" style="width: 140px">
+        <el-select v-model="successFilter" class="filter-select">
           <el-option label="全部" value="all" />
           <el-option label="仅成功" value="true" />
           <el-option label="仅失败" value="false" />
@@ -86,25 +89,33 @@ onMounted(refresh)
 
     <template v-else>
       <el-card class="gb-rise">
-      <el-table :data="logs">
-        <el-table-column label="时间" width="175">
-          <template #default="{ row }">{{ formatDateTime(row.create_at) }}</template>
+      <el-table :data="logs" :size="isMobile ? 'small' : 'default'">
+        <el-table-column label="时间" :width="isMobile ? 130 : 175">
+          <template #default="{ row }">
+            {{ isMobile ? formatDateTime(row.create_at).slice(5) : formatDateTime(row.create_at) }}
+          </template>
         </el-table-column>
         <el-table-column prop="rule_name" label="规则 / 定时器" min-width="130" />
-        <el-table-column prop="rule_type" label="类型" width="150" />
-        <el-table-column label="触发方式" width="110">
+        <!-- 窄屏隐藏次要列，避免横向滚动过长 -->
+        <el-table-column v-if="!isMobile" prop="rule_type" label="类型" width="150" />
+        <el-table-column v-if="!isMobile" label="触发方式" width="110">
           <template #default="{ row }">
             {{ triggerLabels[row.trigger] ?? row.trigger }}
           </template>
         </el-table-column>
-        <el-table-column label="结果" width="90">
+        <el-table-column label="结果" :width="isMobile ? 70 : 90">
           <template #default="{ row }">
             <el-tag :type="row.success ? 'success' : 'danger'" size="small">
               {{ row.success ? '成功' : '失败' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="message" label="详情" min-width="260" show-overflow-tooltip />
+        <el-table-column
+          prop="message"
+          label="详情"
+          :min-width="isMobile ? 180 : 260"
+          show-overflow-tooltip
+        />
       </el-table>
       </el-card>
 
@@ -114,7 +125,9 @@ onMounted(refresh)
           v-model:page-size="pageSize"
           :total="total"
           :page-sizes="[20, 50, 100]"
-          layout="total, sizes, prev, pager, next"
+          :layout="isMobile ? 'prev, pager, next' : 'total, sizes, prev, pager, next'"
+          :pager-count="isMobile ? 5 : 7"
+          :small="isMobile"
           background
         />
       </div>
@@ -128,9 +141,34 @@ onMounted(refresh)
   gap: 12px;
 }
 
+.filter-select {
+  width: 140px;
+}
+
 .pager {
   margin-top: 16px;
   display: flex;
   justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  /* 筛选下拉占一行，两个按钮平分下一行 */
+  .header-tools {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .header-tools .el-button {
+    flex: 1;
+    margin-left: 0;
+  }
+
+  .pager {
+    justify-content: center;
+  }
 }
 </style>

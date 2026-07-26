@@ -14,6 +14,9 @@ import { dashboardApi, timerApi } from '@/api'
 import { ApiError } from '@/api/client'
 import type { DashboardOverview } from '@/api/types'
 import { formatDateTime, formatDuration } from '@/utils/format'
+import { useIsMobile } from '@/composables/useBreakpoint'
+
+const isMobile = useIsMobile()
 
 const router = useRouter()
 
@@ -241,12 +244,14 @@ onUnmounted(() => {
         description="暂无执行记录"
         :image-size="80"
       />
-      <el-table v-else :data="overview.recent_logs" size="default">
-        <el-table-column label="时间" width="175">
-          <template #default="{ row }">{{ formatDateTime(row.create_at) }}</template>
+      <el-table v-else :data="overview.recent_logs" :size="isMobile ? 'small' : 'default'">
+        <el-table-column label="时间" :width="isMobile ? 130 : 175">
+          <template #default="{ row }">
+            {{ isMobile ? formatDateTime(row.create_at).slice(5) : formatDateTime(row.create_at) }}
+          </template>
         </el-table-column>
-        <el-table-column prop="rule_name" label="规则" min-width="120" />
-        <el-table-column label="结果" width="90">
+        <el-table-column prop="rule_name" label="规则" min-width="100" />
+        <el-table-column label="结果" :width="isMobile ? 70 : 90">
           <template #default="{ row }">
             <el-tag :type="row.success ? 'success' : 'danger'" size="small" effect="light">
               {{ row.success ? '成功' : '失败' }}
@@ -385,5 +390,65 @@ onUnmounted(() => {
   font-weight: 600;
   color: var(--el-text-color-regular);
   margin: 2px 0 1px;
+}
+
+/* ---------- 移动端 ---------- */
+
+@media (max-width: 768px) {
+  .header-btns {
+    width: 100%;
+  }
+
+  /* 倒计时环与文字改为上下排列并居中 */
+  .hero-body {
+    flex-direction: column;
+    gap: 18px;
+    text-align: center;
+  }
+
+  .hero-info {
+    align-items: center;
+  }
+
+  .hero-name {
+    font-size: 20px;
+  }
+
+  .countdown-num {
+    font-size: 22px;
+  }
+
+  /* 统计卡两列，避免一列太长要滑很久 */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .stat-body {
+    gap: 12px;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  /* 触屏没有 hover，去掉位移避免点击时抖动 */
+  .stat-card:hover {
+    transform: none;
+    box-shadow: var(--gb-shadow-card);
+  }
+}
+
+/* 只有极窄屏才退回单列，375px 的机型两列仍然放得下 */
+@media (max-width: 340px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
@@ -12,6 +12,7 @@ import {
   SwitchButton,
   Moon,
   Sunny,
+  Fold,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import LogoMark from '@/components/LogoMark.vue'
@@ -19,6 +20,17 @@ import LogoMark from '@/components/LogoMark.vue'
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+
+/** 移动端侧边栏抽屉的展开状态 */
+const drawerOpen = ref(false)
+
+// 切换路由后自动收起抽屉
+watch(
+  () => route.path,
+  () => {
+    drawerOpen.value = false
+  },
+)
 
 const menus = [
   { path: '/dashboard', title: '仪表盘', icon: Odometer },
@@ -53,8 +65,13 @@ async function handleLogout() {
 
 <template>
   <div class="layout">
-    <!-- 侧边栏 -->
-    <aside class="aside">
+    <!-- 移动端抽屉遮罩 -->
+    <Transition name="fade">
+      <div v-if="drawerOpen" class="drawer-mask" @click="drawerOpen = false" />
+    </Transition>
+
+    <!-- 侧边栏：桌面端常驻，移动端为抽屉 -->
+    <aside class="aside" :class="{ open: drawerOpen }">
       <div class="logo">
         <div class="logo-mark"><LogoMark :size="22" /></div>
         <div class="logo-name">
@@ -84,7 +101,12 @@ async function handleLogout() {
     <!-- 主区域 -->
     <div class="content">
       <header class="header">
-        <div class="header-title">{{ route.meta.title ?? '' }}</div>
+        <div class="header-left">
+          <button class="icon-btn menu-btn" title="菜单" @click="drawerOpen = true">
+            <el-icon :size="18"><Fold /></el-icon>
+          </button>
+          <div class="header-title">{{ route.meta.title ?? '' }}</div>
+        </div>
         <div class="header-actions">
           <button class="icon-btn" :title="isDark ? '切换到亮色' : '切换到暗色'" @click="toggleDark">
             <el-icon :size="17"><Moon v-if="!isDark" /><Sunny v-else /></el-icon>
@@ -92,7 +114,7 @@ async function handleLogout() {
           <el-dropdown>
             <span class="user-chip">
               <span class="user-avatar">{{ userStore.user?.username?.[0]?.toUpperCase() }}</span>
-              {{ userStore.user?.username }}
+              <span class="user-name">{{ userStore.user?.username }}</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
@@ -123,6 +145,38 @@ async function handleLogout() {
 .layout {
   height: 100%;
   display: flex;
+}
+
+/* 移动端抽屉遮罩 */
+.drawer-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1999;
+  background: rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s var(--gb-ease);
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 汉堡按钮只在移动端出现。
+   用复合选择器压过后面的 .icon-btn { display: flex }，避免受声明顺序影响。 */
+.icon-btn.menu-btn {
+  display: none;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 /* ---------- 侧边栏：墨色 + 药丸导航 ---------- */
@@ -309,5 +363,60 @@ async function handleLogout() {
   flex: 1;
   overflow-y: auto;
   padding: 24px 28px 40px;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- 移动端 ---------- */
+
+@media (max-width: 768px) {
+  /* 侧边栏脱离文档流，变成从左侧滑出的抽屉 */
+  .aside {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 2000;
+    width: 250px;
+    transform: translateX(-100%);
+    transition: transform 0.28s var(--gb-ease);
+    box-shadow: 4px 0 24px rgb(0 0 0 / 0.25);
+  }
+
+  .aside.open {
+    transform: translateX(0);
+  }
+
+  .icon-btn.menu-btn {
+    display: flex;
+  }
+
+  .header {
+    height: 54px;
+    padding: 0 14px;
+  }
+
+  .header-title {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  /* 窄屏只留头像，省出空间给标题 */
+  .user-name {
+    display: none;
+  }
+
+  .user-chip {
+    padding: 4px;
+  }
+
+  .main {
+    padding: 16px 14px 32px;
+  }
 }
 </style>

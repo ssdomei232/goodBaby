@@ -6,6 +6,9 @@ import { timerApi } from '@/api'
 import { ApiError } from '@/api/client'
 import type { Timer, TimerRequest } from '@/api/types'
 import { durationPresets, formatDateTime, formatDuration } from '@/utils/format'
+import { useIsMobile } from '@/composables/useBreakpoint'
+
+const isMobile = useIsMobile()
 
 const timers = ref<Timer[]>([])
 const loading = ref(false)
@@ -307,7 +310,7 @@ onUnmounted(() => {
 
     <!-- 创建/编辑对话框 -->
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="480px">
-      <el-form label-width="90px">
+      <el-form :label-width="isMobile ? 'auto' : '90px'" :label-position="isMobile ? 'top' : 'right'">
         <el-form-item label="名称" required>
           <el-input v-model="form.name" placeholder="例如：每周报平安" maxlength="64" />
         </el-form-item>
@@ -315,7 +318,13 @@ onUnmounted(() => {
           <el-input v-model="form.description" type="textarea" :rows="2" placeholder="备注(可选)" />
         </el-form-item>
         <el-form-item label="签到周期" required>
-          <el-input-number v-model="form.durationDays" :min="0.001" :step="1" style="width: 160px" />
+          <el-input-number
+            v-model="form.durationDays"
+            :min="0.001"
+            :step="1"
+            class="timer-dialog-number"
+            style="width: 160px"
+          />
           <span class="unit">天</span>
           <div class="presets">
             <el-tag
@@ -331,7 +340,13 @@ onUnmounted(() => {
           </div>
         </el-form-item>
         <el-form-item label="提前提醒" required>
-          <el-input-number v-model="form.remindHours" :min="0" :step="1" style="width: 160px" />
+          <el-input-number
+            v-model="form.remindHours"
+            :min="0"
+            :step="1"
+            class="timer-dialog-number"
+            style="width: 160px"
+          />
           <span class="unit">小时</span>
           <div class="muted">到期前会通过提醒渠道(设置页)提醒你签到</div>
         </el-form-item>
@@ -350,7 +365,8 @@ onUnmounted(() => {
 <style scoped>
 .timer-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  /* min() 兜底：窄屏时不会因为 320px 下限撑破容器 */
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -433,5 +449,46 @@ onUnmounted(() => {
   margin-right: 6px;
   cursor: pointer;
   transition: all 0.2s var(--gb-ease);
+}
+
+/* ---------- 移动端 ---------- */
+
+@media (max-width: 768px) {
+  .timer-card:hover {
+    transform: none;
+    box-shadow: var(--gb-shadow-card);
+  }
+
+  .timer-countdown {
+    font-size: 16px;
+  }
+
+  /* 操作按钮换行排列，开关另起一行靠右 */
+  .timer-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .timer-actions .el-button + .el-button {
+    margin-left: 0;
+  }
+
+  .timer-meta {
+    gap: 2px 12px;
+  }
+
+  /* 数字输入框在窄屏撑满，配合下方预设标签 */
+  .timer-dialog-number {
+    width: 100% !important;
+  }
+
+  .unit {
+    display: inline-block;
+    margin: 6px 0 0;
+  }
+
+  .preset-tag {
+    margin: 0 6px 6px 0;
+  }
 }
 </style>
