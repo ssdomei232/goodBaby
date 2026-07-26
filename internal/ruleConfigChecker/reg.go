@@ -22,6 +22,7 @@ func InitValidatorRegistry() *ValidatorRegistry {
 
 		// 注册所有规则验证器
 		r.Register(&bilibili.BilibiliDynamicRuleValidator{})
+		r.Register(&bilibili.BilibiliPrivateMessageRuleValidator{})
 		r.Register(&email.EmailRuleValidator{})
 		r.Register(&onebot.OneBotRuleValidator{})
 		r.Register(&dingtalk.DingTalkRuleValidator{})

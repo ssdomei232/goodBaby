@@ -15,6 +15,7 @@ import { ApiError } from '@/api/client'
 import type { DashboardOverview } from '@/api/types'
 import { formatDateTime, formatDuration } from '@/utils/format'
 import { useIsMobile } from '@/composables/useBreakpoint'
+import CountUp from '@/components/CountUp.vue'
 
 const isMobile = useIsMobile()
 
@@ -228,7 +229,7 @@ onUnmounted(() => {
             <el-icon :size="20"><component :is="stat.icon" /></el-icon>
           </div>
           <div>
-            <div class="stat-value">{{ stat.value ?? '-' }}</div>
+            <div class="stat-value"><CountUp :value="stat.value" /></div>
             <div class="stat-label">{{ stat.label }}</div>
             <div class="muted">{{ stat.sub }}</div>
           </div>

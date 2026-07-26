@@ -15,6 +15,7 @@ import {
   Fold,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
+import { useTheme } from '@/composables/useTheme'
 import LogoMark from '@/components/LogoMark.vue'
 
 const route = useRoute()
@@ -43,18 +44,8 @@ const menus = [
 
 const activePath = computed(() => `/${route.path.split('/')[1] ?? ''}`)
 
-const isDark = ref(document.documentElement.classList.contains('dark'))
-
-function toggleDark() {
-  isDark.value = !isDark.value
-  document.documentElement.classList.toggle('dark', isDark.value)
-  localStorage.setItem('gb-theme', isDark.value ? 'dark' : 'light')
-}
-
-// 恢复上次的主题选择
-if (localStorage.getItem('gb-theme') === 'dark' && !isDark.value) {
-  toggleDark()
-}
+// 主题状态是全局单例，初始化在 main.ts 里完成
+const { isDark, toggleTheme } = useTheme()
 
 async function handleLogout() {
   await userStore.logout()
@@ -108,8 +99,15 @@ async function handleLogout() {
           <div class="header-title">{{ route.meta.title ?? '' }}</div>
         </div>
         <div class="header-actions">
-          <button class="icon-btn" :title="isDark ? '切换到亮色' : '切换到暗色'" @click="toggleDark">
-            <el-icon :size="17"><Moon v-if="!isDark" /><Sunny v-else /></el-icon>
+          <button
+            class="icon-btn theme-btn"
+            :title="isDark ? '切换到亮色' : '切换到暗色'"
+            @click="toggleTheme"
+          >
+            <Transition name="theme-icon" mode="out-in">
+              <el-icon v-if="isDark" :size="17" key="sun"><Sunny /></el-icon>
+              <el-icon v-else :size="17" key="moon"><Moon /></el-icon>
+            </Transition>
           </button>
           <el-dropdown>
             <span class="user-chip">
@@ -327,6 +325,37 @@ async function handleLogout() {
 
 .icon-btn:hover {
   background: var(--el-fill-color);
+}
+
+/* 主题按钮：hover 时图标轻微旋转，点击有回弹 */
+.theme-btn .el-icon {
+  transition: transform 0.4s var(--gb-ease);
+}
+
+.theme-btn:hover .el-icon {
+  transform: rotate(25deg) scale(1.1);
+}
+
+.theme-btn:active {
+  transform: scale(0.9);
+}
+
+/* 图标切换：旧图标转出，新图标转入 */
+.theme-icon-enter-active,
+.theme-icon-leave-active {
+  transition:
+    opacity 0.2s var(--gb-ease),
+    transform 0.28s var(--gb-ease);
+}
+
+.theme-icon-enter-from {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.5);
+}
+
+.theme-icon-leave-to {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.5);
 }
 
 .user-chip {

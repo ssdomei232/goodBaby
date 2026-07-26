@@ -71,6 +71,7 @@ func InitExecutorRegistry() *ExecutorRegistry {
 
 		// 注册所有规则执行器
 		registry.Register(&bilibili.BilibiliDynamicExecutor{})
+		registry.Register(&bilibili.BilibiliPrivateMessageExecutor{})
 		registry.Register(&email.EmailExecutor{})
 		registry.Register(&github.GithubMakeRepoPublicExecutor{})
 		registry.Register(&onebot.OneBotExecutor{})

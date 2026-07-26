@@ -7,7 +7,11 @@ import 'element-plus/theme-chalk/dark/css-vars.css'
 
 import App from './App.vue'
 import router from './router'
+import { initTheme } from './composables/useTheme'
 import './assets/main.css'
+
+// 挂载前先定好主题，避免登录页闪一下白底
+initTheme()
 
 const app = createApp(App)
 app.use(createPinia())

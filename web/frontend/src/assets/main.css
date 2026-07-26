@@ -79,6 +79,28 @@ body,
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
 }
 
+/* 统计数字等场景用等宽数字，跳动时宽度不抖 */
+.stat-value,
+.countdown-num,
+.ring-pct {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 键盘可达性 ---------- */
+
+/* 只在键盘导航时显示焦点环，鼠标点击不显示 */
+:focus-visible {
+  outline: 2px solid var(--gb-primary);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.el-button:focus-visible,
+.icon-btn:focus-visible {
+  outline: 2px solid var(--gb-primary);
+  outline-offset: 2px;
+}
+
 /* ---------- Element Plus 外观微调 ---------- */
 
 .el-card {
@@ -184,6 +206,62 @@ body,
 
 .gb-pulse {
   animation: gb-pulse 1.6s ease-in-out infinite;
+}
+
+/* ---------- 明暗切换的圆形揭示动画 ---------- */
+
+/*
+ * 默认的 view transition 是新旧画面交叉淡入淡出，会和我们的圆形裁剪打架，
+ * 这里关掉默认动画，改由 useTheme 里的 Web Animations 驱动 clip-path。
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* 切到深色：新画面盖在上面扩散进来 */
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2147483646;
+}
+
+/* 切回浅色：反过来，让旧的深色画面盖在上面收缩出去 */
+html.dark::view-transition-old(root) {
+  z-index: 2147483646;
+}
+
+html.dark::view-transition-new(root) {
+  z-index: 1;
+}
+
+/*
+ * 不支持 View Transitions 的浏览器(Firefox 等)退化为整页淡变。
+ * 只在 .no-vt 下生效：支持圆形揭示时再叠一层背景淡变，
+ * 会让揭示区域露出"过渡到一半"的颜色，反而更脏。
+ */
+html.no-vt body,
+html.no-vt .el-card,
+html.no-vt .el-table,
+html.no-vt .el-table tr,
+html.no-vt .el-table th.el-table__cell {
+  transition:
+    background-color 0.3s var(--gb-ease),
+    border-color 0.3s var(--gb-ease);
+}
+
+/* 用户要求减少动效时，整体禁用过渡 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* ---------- 滚动条 ---------- */
