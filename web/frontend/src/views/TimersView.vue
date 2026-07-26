@@ -147,12 +147,11 @@ async function trigger(timer: Timer) {
   triggeringId.value = timer.id
   try {
     const result = await timerApi.trigger(timer.id)
-    if (result.failed.length === 0) {
+    const failed = result.failed ?? []
+    if (failed.length === 0) {
       ElMessage.success(`已执行 ${result.total} 条规则，全部成功`)
     } else {
-      ElMessage.warning(
-        `已执行 ${result.total} 条规则，${result.failed.length} 条失败，详情见执行日志`,
-      )
+      ElMessage.warning(`已执行 ${result.total} 条规则，${failed.length} 条失败，详情见执行日志`)
     }
   } catch (error) {
     ElMessage.error(error instanceof ApiError ? error.message : '触发失败')

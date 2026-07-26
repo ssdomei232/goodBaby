@@ -57,11 +57,14 @@ func HandleTriggerTimer(c *gin.Context) {
 	defer cancel()
 
 	// 并发执行所有规则，收集失败信息
+	//
+	// fails 必须初始化为空切片：nil 切片会被序列化成 JSON null，
+	// 前端读 failed.length 时会抛异常，把全部成功误报成触发失败。
 	var (
-		wg    sync.WaitGroup
-		mu    sync.Mutex
-		fails []string
+		wg sync.WaitGroup
+		mu sync.Mutex
 	)
+	fails := []string{}
 	for i := range rules {
 		rule := rules[i]
 		wg.Add(1)

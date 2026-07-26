@@ -42,18 +42,23 @@ func trim(uid uint) {
 		return
 	}
 
-	var cutoff model.ExecutionLog
-	err = gormDB.Where("uid = ?", uid).
+	// 用 Find 而不是 First：日志没超出保留条数是常态，
+	// First 找不到记录会返回 ErrRecordNotFound，每写一条日志都刷一行 gorm 警告。
+	var cutoff []model.ExecutionLog
+	if err := gormDB.Where("uid = ?", uid).
 		Order("id DESC").
 		Offset(config.LogRetainCount).
 		Limit(1).
-		First(&cutoff).Error
-	if err != nil {
+		Find(&cutoff).Error; err != nil {
+		log.Printf("清理执行日志失败: %v", err)
+		return
+	}
+	if len(cutoff) == 0 {
 		// 没有超出保留条数
 		return
 	}
 
-	if err := gormDB.Where("uid = ? AND id <= ?", uid, cutoff.ID).
+	if err := gormDB.Where("uid = ? AND id <= ?", uid, cutoff[0].ID).
 		Delete(&model.ExecutionLog{}).Error; err != nil {
 		log.Printf("清理执行日志失败: %v", err)
 	}
