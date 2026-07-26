@@ -1,7 +1,9 @@
 # ======================
 # 前端构建阶段 (Frontend Stage)
 # ======================
-FROM node:22-alpine AS frontend
+# 固定在构建机架构上运行：前端产物与目标架构无关，
+# 否则交叉构建 arm64 镜像时 npm 要跑在 QEMU 里，慢得离谱
+FROM --platform=$BUILDPLATFORM node:22-alpine AS frontend
 
 WORKDIR /app/web/frontend
 
@@ -14,7 +16,9 @@ RUN npm run build
 # ======================
 # 后端构建阶段 (Builder Stage)
 # ======================
-FROM golang:1.25-alpine AS builder
+# 同样固定在构建机架构上，用 Go 的交叉编译产出目标架构的二进制。
+# 依赖里没有 CGO(sqlite 用的是纯 Go 实现)，所以交叉编译是安全的。
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
 
 WORKDIR /app
 
@@ -26,12 +30,17 @@ COPY . .
 # 用前端构建产物覆盖占位的 dist
 COPY --from=frontend /app/web/dist /app/web/dist
 
-ARG VERSION="2.0.0"
+ARG VERSION="dev"
 ARG BUILD_DATE="unknown"
 ARG GIT_COMMIT="unknown"
+# TARGETARCH 由 buildx 自动注入(amd64 / arm64 / ...)
+ARG TARGETARCH
+ARG TARGETOS=linux
 RUN CGO_ENABLED=0 \
-    GOOS=linux \
+    GOOS=${TARGETOS} \
+    GOARCH=${TARGETARCH} \
     go build \
+    -trimpath \
     -ldflags="-w -s -X main.version=${VERSION} -X main.buildDate=${BUILD_DATE} -X main.gitCommit=${GIT_COMMIT}" \
     -o /app/main .
 

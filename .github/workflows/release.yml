@@ -1,0 +1,216 @@
+name: Release
+
+# 推送 v 开头的 tag 时触发，例如 git tag v2.2.0 && git push origin v2.2.0
+on:
+  push:
+    tags:
+      - 'v*'
+  # 允许手动跑一次做验证（不会创建 Release，只构建产物）
+  workflow_dispatch:
+
+permissions:
+  contents: write # 创建 Release
+  packages: write # 推送镜像到 ghcr
+
+env:
+  GO_VERSION: '1.25'
+  NODE_VERSION: '22'
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ==========================================================
+  # 前端只构建一次，产物给所有平台的二进制共用
+  # ==========================================================
+  frontend:
+    name: 构建前端
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+
+      - name: 安装依赖
+        working-directory: web/frontend
+        run: npm ci
+
+      - name: 类型检查与构建
+        working-directory: web/frontend
+        run: npm run build
+
+      - name: 上传前端产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+          retention-days: 1
+          if-no-files-found: error
+
+  # ==========================================================
+  # 交叉编译各平台二进制
+  # ==========================================================
+  build:
+    name: 构建 ${{ matrix.goos }}/${{ matrix.goarch }}
+    needs: frontend
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+          - goos: windows
+            goarch: amd64
+            ext: .exe
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: 取回前端产物
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: web/dist
+
+      - name: 准备版本信息
+        id: vars
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          # 手动触发时没有 tag，用短 commit 顶替
+          if [ "${GITHUB_REF_TYPE}" != "tag" ]; then
+            VERSION="dev-$(git rev-parse --short HEAD)"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: 编译
+        env:
+          CGO_ENABLED: '0' # sqlite 用纯 Go 实现，无需 CGO，可安全交叉编译
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          go build -trimpath \
+            -ldflags="-w -s \
+              -X main.version=${{ steps.vars.outputs.version }} \
+              -X main.buildDate=${{ steps.vars.outputs.build_date }} \
+              -X main.gitCommit=${GITHUB_SHA::7}" \
+            -o "goodbaby${{ matrix.ext }}" .
+
+      - name: 打包
+        id: pack
+        run: |
+          NAME="goodbaby_${{ steps.vars.outputs.version }}_${{ matrix.goos }}_${{ matrix.goarch }}"
+          mkdir -p "dist/${NAME}"
+          cp "goodbaby${{ matrix.ext }}" "dist/${NAME}/"
+          cp README.md LICENSE "dist/${NAME}/"
+          cp -r docs "dist/${NAME}/docs"
+
+          cd dist
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            zip -qr "${NAME}.zip" "${NAME}"
+            echo "archive=dist/${NAME}.zip" >> "$GITHUB_OUTPUT"
+          else
+            tar -czf "${NAME}.tar.gz" "${NAME}"
+            echo "archive=dist/${NAME}.tar.gz" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ${{ steps.pack.outputs.archive }}
+          retention-days: 7
+          if-no-files-found: error
+
+  # ==========================================================
+  # 汇总产物并创建 Release（仅 tag 触发时执行）
+  # ==========================================================
+  release:
+    name: 发布 Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref_type == 'tag'
+    steps:
+      - name: 取回全部产物
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: dist
+          merge-multiple: true
+
+      - name: 生成校验和
+        working-directory: dist
+        run: |
+          sha256sum * > checksums.txt
+          cat checksums.txt
+
+      - name: 创建 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" dist/* \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "${GITHUB_REF_NAME}" \
+            --generate-notes
+
+  # ==========================================================
+  # 构建多架构镜像并推送 ghcr
+  # ==========================================================
+  docker:
+    name: 构建并推送镜像
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 交叉编译由 Dockerfile 里的 TARGETARCH 完成，
+      # 这里的 QEMU 只用于最终 alpine 运行阶段的镜像组装
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: 登录 ghcr
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 生成镜像标签
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable=${{ github.ref_type == 'tag' }}
+            type=sha,format=short,enable=${{ github.ref_type != 'tag' }}
+
+      - name: 构建并推送
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ github.ref_name }}
+            BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            GIT_COMMIT=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

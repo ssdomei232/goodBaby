@@ -31,6 +31,25 @@ docker compose up -d
 首次启动会在 `./data` 下自动生成 `config.json` 与 `data.db`。
 打开 `http://localhost:8088`，按引导创建第一个账号即可。
 
+### 直接拉取镜像
+
+每次发版会自动构建 `linux/amd64` 与 `linux/arm64` 镜像推送到 GitHub Container Registry：
+
+```bash
+docker run -d --name goodbaby -p 8088:8088 -v ./data:/app/data ghcr.io/ssdomei232/goodbaby:latest
+```
+
+可用标签：`latest`、`v2.2.0`(完整版本)、`2.2`(次版本)、`2`(主版本)。
+
+### 下载预编译二进制
+
+[Releases](https://github.com/ssdomei232/goodBaby/releases) 提供 Linux / Windows / macOS 的 amd64 与 arm64 产物，
+解压后直接运行即可（前端已内嵌，无需额外部署）。压缩包旁的 `checksums.txt` 可校验完整性：
+
+```bash
+sha256sum -c checksums.txt --ignore-missing
+```
+
 ### 从源码构建
 
 需要 Go 1.25+ 与 Node.js 20+：
@@ -92,6 +111,11 @@ cd web/frontend && npm run dev
 ## 数据库
 
 默认 SQLite，可选 PostgreSQL，详见 [docs/database.md](docs/database.md)。
+
+## 发版
+
+推送 `v` 开头的 tag 即可自动构建产物、创建 Release 并推送镜像到 ghcr，
+详见 [docs/release.md](docs/release.md)。
 
 ## 驱动配置
 

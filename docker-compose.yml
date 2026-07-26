@@ -1,6 +1,8 @@
 services:
   goodbaby:
-    image: mei232/goodbaby:v2.1.0
+    # 发版镜像由 GitHub Actions 自动推送到 ghcr
+    image: ghcr.io/ssdomei232/goodbaby:latest
+    # 想用本地源码构建时把上面一行注释掉，保留 build
     build: .
     ports:
       - "8088:8088"
