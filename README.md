@@ -1,9 +1,12 @@
 # goodBaby v2
+![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/ssdomei232/goodBaby)
+![GitHub](https://img.shields.io/github/license/ssdomei232/goodBaby)
+![GitHub tag (with filter)](https://img.shields.io/github/v/tag/ssdomei232/goodBaby)
+根据《中国心血管健康与疾病报告2023》，中国 每年 猝死总人数（含心源性和非心源性）或达80万-100万,18-35岁人群占比为38%，也就是说，每天18-35岁人群有近1000人猝死
 
-摇篮系统 —— 为独居青年准备的「死人开关」(Dead Man's Switch)。
+伴随着中国人口老龄化加剧，年轻人的牵挂越来越多，面对着可能的猝死，我们或许真的需要做好准备
 
-一个人在大城市生活，最怕的是出了事都没人知道。goodBaby 让你定期回来报一声平安；一旦超过设定的期限没有签到，它就会替你把预先托付的留言送出去：给家人的邮件、给朋友的 QQ / 钉钉消息、一条 B 站动态，或是公开你的 GitHub 仓库，把作品留给世界。
-
+所以我写了goodBaby来解决这个问题，他和apple app store里的“死了么”形式上有些接近，不过goodBaby支持了更多好玩的通知方式，比如bilibili动态，github仓库，邮件，OneBot,还可以方便的自托管
 [![通过雨云一键部署](https://rainyun-apps.cn-nb1.rains3.com/materials/deploy-on-rainyun-cn.svg)](https://app.rainyun.com/apps/rca/store/7125/cat_)
 
 ## 功能
@@ -39,12 +42,10 @@ docker compose up -d
 docker run -d --name goodbaby -p 8088:8088 -v ./data:/app/data ghcr.io/ssdomei232/goodbaby:latest
 ```
 
-可用标签：`latest`、`v2.2.0`(完整版本)、`2.2`(次版本)、`2`(主版本)。
-
 ### 下载预编译二进制
 
 [Releases](https://github.com/ssdomei232/goodBaby/releases) 提供 Linux / Windows / macOS 的 amd64 与 arm64 产物，
-解压后直接运行即可（前端已内嵌，无需额外部署）。压缩包旁的 `checksums.txt` 可校验完整性：
+解压后直接运行即可。压缩包旁的 `checksums.txt` 可校验完整性：
 
 ```bash
 sha256sum -c checksums.txt --ignore-missing
@@ -55,7 +56,7 @@ sha256sum -c checksums.txt --ignore-missing
 需要 Go 1.25+ 与 Node.js 20+：
 
 ```bash
-# 1. 构建前端(产物输出到 web/dist，会被 go:embed 打进二进制)
+# 1. 构建前端
 cd web/frontend && npm install && npm run build && cd ../..
 
 # 2. 构建后端
@@ -97,16 +98,7 @@ cd web/frontend && npm run dev
 
 ### 管理员后台
 
-**第一个注册的用户自动成为管理员**（老版本升级上来时，注册最早的用户会被自动提升）。
-
-管理员在「设置」页面会多出一个「系统配置」区块，可以直接修改并立即生效，无需重启：
-
-* 开放注册
-* 检查间隔（保存后会自动重排定时任务）
-* 规则重试时长
-* 日志保留条数
-
-监听地址、数据库、会话密钥这类启动项不在后台开放，只能改配置文件。
+**第一个注册的用户自动成为管理员**。
 
 ## 数据库
 
