@@ -53,3 +53,19 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: web/frontend
+        
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - run: go test ./...
