@@ -9,6 +9,7 @@ import (
 	"github.com/ssdomei232/goodBaby/drivers/bilibili"
 	"github.com/ssdomei232/goodBaby/drivers/dingtalk"
 	"github.com/ssdomei232/goodBaby/drivers/email"
+	"github.com/ssdomei232/goodBaby/drivers/fwalert"
 	"github.com/ssdomei232/goodBaby/drivers/github"
 	"github.com/ssdomei232/goodBaby/drivers/onebot"
 	"github.com/ssdomei232/goodBaby/model"
@@ -76,6 +77,7 @@ func InitExecutorRegistry() *ExecutorRegistry {
 		registry.Register(&github.GithubMakeRepoPublicExecutor{})
 		registry.Register(&onebot.OneBotExecutor{})
 		registry.Register(&dingtalk.DingTalkExecutor{})
+		registry.Register(&fwalert.FwalertExecutor{})
 		// 未来添加新规则类型时，在这里注册即可
 
 		globalExecutorRegistry = registry

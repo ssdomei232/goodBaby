@@ -9,8 +9,6 @@ import (
 )
 
 // DingTalkExecutor 钉钉机器人执行器
-//
-// 之前只注册了校验器却没有执行器，导致钉钉规则可以创建但永远不会被执行。
 type DingTalkExecutor struct{}
 
 func (e *DingTalkExecutor) GetType() string {

@@ -6,6 +6,7 @@ import (
 	"github.com/ssdomei232/goodBaby/drivers/bilibili"
 	"github.com/ssdomei232/goodBaby/drivers/dingtalk"
 	"github.com/ssdomei232/goodBaby/drivers/email"
+	"github.com/ssdomei232/goodBaby/drivers/fwalert"
 	"github.com/ssdomei232/goodBaby/drivers/github"
 	"github.com/ssdomei232/goodBaby/drivers/onebot"
 )
@@ -27,6 +28,7 @@ func InitValidatorRegistry() *ValidatorRegistry {
 		r.Register(&onebot.OneBotRuleValidator{})
 		r.Register(&dingtalk.DingTalkRuleValidator{})
 		r.Register(&github.GithubMakeRepositoryPublicRuleValidator{})
+		r.Register(&fwalert.FwalertRuleValidator{})
 
 		registry = r
 	})
