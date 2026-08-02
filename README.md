@@ -1,14 +1,13 @@
 # goodBaby v2
 
-![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/ssdomei232/goodBaby)
-![GitHub](https://img.shields.io/github/license/ssdomei232/goodBaby)
-![GitHub tag (with filter)](https://img.shields.io/github/v/tag/ssdomei232/goodBaby)  
+![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/ssdomei232/goodBaby) ![GitHub](https://img.shields.io/github/license/ssdomei232/goodBaby) ![GitHub tag (with filter)](https://img.shields.io/github/v/tag/ssdomei232/goodBaby)  
 
 根据《中国心血管健康与疾病报告2023》，中国 每年 猝死总人数（含心源性和非心源性）或达80万-100万,18-35岁人群占比为38%，也就是说，每天18-35岁人群有近1000人猝死
 
 伴随着中国人口老龄化加剧，年轻人的牵挂越来越多，面对着可能的猝死，我们或许真的需要做好准备
 
-所以我写了goodBaby来解决这个问题，他和apple app store里的“死了么”形式上有些接近，不过goodBaby支持了更多好玩的通知方式，比如bilibili动态，github仓库，邮件，OneBot,还可以方便的自托管
+所以我写了goodBaby来解决这个问题，他和apple app store里的“死了么”形式上有些接近，不过goodBaby支持了更多好玩的通知方式，比如bilibili动态，github仓库，邮件，OneBot,还可以方便的自托管  
+
 [![通过雨云一键部署](https://rainyun-apps.cn-nb1.rains3.com/materials/deploy-on-rainyun-cn.svg)](https://app.rainyun.com/apps/rca/store/7125/cat_)
 
 ## 功能
