@@ -10,7 +10,12 @@ import (
 func send(config *FwAlertRuleConfig) error {
 	restyClient := resty.New()
 	req := restyClient.R()
-	resp, err := req.Execute("GET", config.WebhookURL+"?message="+config.Msg)
+
+	req.SetBody(FwAlertRequest{
+		Message: config.Msg,
+	})
+
+	resp, err := req.Execute(resty.MethodPost, config.WebhookURL)
 	if err != nil {
 		return err
 	}

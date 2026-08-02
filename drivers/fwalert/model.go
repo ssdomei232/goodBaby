@@ -6,3 +6,7 @@ type FwAlertRuleConfig struct {
 	WebhookURL string `json:"webhook_url"`
 	Msg        string `json:"msg"`
 }
+
+type FwAlertRequest struct {
+	Message string `json:"message"`
+}

@@ -2,7 +2,8 @@
 
 ![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/ssdomei232/goodBaby)
 ![GitHub](https://img.shields.io/github/license/ssdomei232/goodBaby)
-![GitHub tag (with filter)](https://img.shields.io/github/v/tag/ssdomei232/goodBaby)
+![GitHub tag (with filter)](https://img.shields.io/github/v/tag/ssdomei232/goodBaby)  
+
 根据《中国心血管健康与疾病报告2023》，中国 每年 猝死总人数（含心源性和非心源性）或达80万-100万,18-35岁人群占比为38%，也就是说，每天18-35岁人群有近1000人猝死
 
 伴随着中国人口老龄化加剧，年轻人的牵挂越来越多，面对着可能的猝死，我们或许真的需要做好准备
@@ -119,6 +120,7 @@ cd web/frontend && npm run dev
 * [OneBot (QQ)](docs/onebot-config.md)
 * [钉钉机器人](docs/dingtalk-config.md)
 * [GitHub](docs/github-config.md)
+* [饭碗警告](docs/fwalert-config.md)
 
 ## 开发：新增一种规则类型
 
