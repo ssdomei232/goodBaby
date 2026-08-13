@@ -3,6 +3,7 @@ package rainyun
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/ssdomei232/goodBaby/internal/retry"
 	"github.com/ssdomei232/goodBaby/model"
@@ -115,6 +116,10 @@ func RainyunRunAway(ctx context.Context, rule *model.Rule) error {
 		if err != nil {
 			fails = append(fails, fmt.Sprintf("RGS %d: %v", rgs.ID, err))
 		}
+	}
+
+	if len(fails) > 0 {
+		return fmt.Errorf("%d/%d 台云服务器重装失败: %s", len(fails), total, strings.Join(fails, "; "))
 	}
 
 	return nil

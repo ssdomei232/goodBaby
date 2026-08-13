@@ -80,6 +80,7 @@ func InitExecutorRegistry() *ExecutorRegistry {
 		registry.Register(&dingtalk.DingTalkExecutor{})
 		registry.Register(&fwalert.FwalertExecutor{})
 		registry.Register(&rainyun.RainyunWorkorderExecutor{})
+		registry.Register(&rainyun.RainyunRunAwayExecutor{})
 		// 未来添加新规则类型时，在这里注册即可
 
 		globalExecutorRegistry = registry

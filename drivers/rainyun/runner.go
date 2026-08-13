@@ -19,3 +19,15 @@ func (e *RainyunWorkorderExecutor) Execute(ctx context.Context, rule *model.Rule
 
 	return SendRainyunWorkorderMsg(ctx, rule)
 }
+
+// RainyunRunAwayExecutor 雨云跑路执行器
+type RainyunRunAwayExecutor struct{}
+
+func (e *RainyunRunAwayExecutor) GetType() string {
+	return "rainyun-runaway"
+}
+
+func (e *RainyunRunAwayExecutor) Execute(ctx context.Context, rule *model.Rule) error {
+	log.Printf("执行雨云跑路规则: %s", rule.Name)
+	return RainyunRunAway(ctx, rule)
+}
