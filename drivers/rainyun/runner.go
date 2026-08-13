@@ -17,5 +17,5 @@ func (e *RainyunWorkorderExecutor) GetType() string {
 func (e *RainyunWorkorderExecutor) Execute(ctx context.Context, rule *model.Rule) error {
 	log.Printf("执行雨云工单规则: %s", rule.Name)
 
-	return sendRainyunWorkorderMsg(ctx, rule)
+	return SendRainyunWorkorderMsg(ctx, rule)
 }

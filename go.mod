@@ -13,7 +13,7 @@ require (
 	github.com/google/go-github/v84 v84.0.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/ssdomei232/napcat-http-go-sdk v1.0.0
-	github.com/ssdomei232/rainyun-go-sdk/v2 v2.0.5
+	github.com/ssdomei232/rainyun-go-sdk/v2 v2.0.6
 	github.com/wneessen/go-mail v0.7.2
 	golang.org/x/crypto v0.48.0
 	gorm.io/driver/postgres v1.6.0

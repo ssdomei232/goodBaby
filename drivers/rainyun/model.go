@@ -15,3 +15,7 @@ type RainyunWorkOrderRule struct {
 type RainyunAccount struct {
 	APIKey string `json:"api_key"`
 }
+
+type RainyunRunAwayRule struct {
+	IK string `json:"ik"`
+}
