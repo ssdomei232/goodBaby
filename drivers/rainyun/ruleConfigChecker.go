@@ -35,7 +35,7 @@ func (v *RainyunWorkorderRuleValidator) Meta() meta.RuleMeta {
 	return meta.RuleMeta{
 		Type:        RuleType,
 		Label:       "发送雨云工单",
-		Description: "触发时通过雨云向指定的工单系统发送工单。",
+		Description: "触发时发送雨云工单",
 		AccountType: AccountType,
 		Fields: []meta.Field{
 			{Key: "title", Label: "工单标题", Type: meta.FieldTextarea, Required: true},
