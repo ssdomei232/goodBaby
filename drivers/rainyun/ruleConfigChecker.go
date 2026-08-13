@@ -70,7 +70,7 @@ func (v *RainyunRunAwayRuleValidator) Meta() meta.RuleMeta {
 		Description: "触发时会重装雨云账号下所有云服务器来实现跑路",
 		AccountType: AccountType,
 		Fields: []meta.Field{
-			{Key: "ik", Label: "该操作引发的损失及法律责任归属账号所有人，本软件一律不承担，请输入我已知晓", Type: meta.FieldTextarea, Required: true},
+			{Key: "ik", Label: "免责声明", Type: meta.FieldTextarea, Required: true, Placeholder: "该操作引发的损失及法律责任归属账号所有人，本软件一律不承担，请输入\"我已知晓\""},
 		},
 	}
 }

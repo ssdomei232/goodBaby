@@ -31,6 +31,7 @@ func InitValidatorRegistry() *ValidatorRegistry {
 		r.Register(&github.GithubMakeRepositoryPublicRuleValidator{})
 		r.Register(&fwalert.FwalertRuleValidator{})
 		r.Register(&rainyun.RainyunWorkorderRuleValidator{})
+		r.Register(&rainyun.RainyunRunAwayRuleValidator{})
 
 		registry = r
 	})
