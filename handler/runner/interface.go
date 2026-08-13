@@ -12,6 +12,7 @@ import (
 	"github.com/ssdomei232/goodBaby/drivers/fwalert"
 	"github.com/ssdomei232/goodBaby/drivers/github"
 	"github.com/ssdomei232/goodBaby/drivers/onebot"
+	"github.com/ssdomei232/goodBaby/drivers/rainyun"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
@@ -78,6 +79,7 @@ func InitExecutorRegistry() *ExecutorRegistry {
 		registry.Register(&onebot.OneBotExecutor{})
 		registry.Register(&dingtalk.DingTalkExecutor{})
 		registry.Register(&fwalert.FwalertExecutor{})
+		registry.Register(&rainyun.RainyunWorkorderExecutor{})
 		// 未来添加新规则类型时，在这里注册即可
 
 		globalExecutorRegistry = registry

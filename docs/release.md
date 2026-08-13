@@ -37,7 +37,7 @@ git push origin v2.2.0
 
 编译时通过 ldflags 注入，启动日志里能看到：
 
-```
+```log
 goodBaby v2.2.0 (a1b2c3d, 2026-07-27T07:00:00Z) 启动中...
 ```
 

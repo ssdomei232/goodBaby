@@ -9,6 +9,7 @@ import (
 	"github.com/ssdomei232/goodBaby/drivers/fwalert"
 	"github.com/ssdomei232/goodBaby/drivers/github"
 	"github.com/ssdomei232/goodBaby/drivers/onebot"
+	"github.com/ssdomei232/goodBaby/drivers/rainyun"
 )
 
 var (
@@ -29,6 +30,7 @@ func InitValidatorRegistry() *ValidatorRegistry {
 		r.Register(&dingtalk.DingTalkRuleValidator{})
 		r.Register(&github.GithubMakeRepositoryPublicRuleValidator{})
 		r.Register(&fwalert.FwalertRuleValidator{})
+		r.Register(&rainyun.RainyunWorkorderRuleValidator{})
 
 		registry = r
 	})

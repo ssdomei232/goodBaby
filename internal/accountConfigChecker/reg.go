@@ -7,6 +7,7 @@ import (
 	"github.com/ssdomei232/goodBaby/drivers/email"
 	"github.com/ssdomei232/goodBaby/drivers/github"
 	"github.com/ssdomei232/goodBaby/drivers/onebot"
+	"github.com/ssdomei232/goodBaby/drivers/rainyun"
 )
 
 var (
@@ -24,6 +25,7 @@ func InitValidatorRegistry() *ValidatorRegistry {
 		r.Register(&email.EmailAccountConfigValidator{})
 		r.Register(&github.GitHubAccountConfigValidator{})
 		r.Register(&onebot.OneBotAccountConfigValidator{})
+		r.Register(&rainyun.RainyunAccountConfigValidator{})
 
 		registry = r
 	})

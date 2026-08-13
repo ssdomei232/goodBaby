@@ -9,11 +9,14 @@ require (
 	github.com/gin-contrib/sessions v1.0.4
 	github.com/gin-gonic/gin v1.11.0
 	github.com/glebarez/sqlite v1.11.0
+	github.com/go-resty/resty/v2 v2.17.2
 	github.com/google/go-github/v84 v84.0.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/ssdomei232/napcat-http-go-sdk v1.0.0
+	github.com/ssdomei232/rainyun-go-sdk/v2 v2.0.5
 	github.com/wneessen/go-mail v0.7.2
 	golang.org/x/crypto v0.48.0
+	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.25.12
 )
 
@@ -29,7 +32,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.27.0 // indirect
-	github.com/go-resty/resty/v2 v2.17.2 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
@@ -68,7 +70,6 @@ require (
 	golang.org/x/text v0.34.0 // indirect
 	golang.org/x/tools v0.42.0 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
-	gorm.io/driver/postgres v1.6.0 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
