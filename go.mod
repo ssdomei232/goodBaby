@@ -5,6 +5,10 @@ go 1.25.0
 require (
 	github.com/CatchZeng/dingtalk v1.5.0
 	github.com/CuteReimu/bilibili/v2 v2.3.5
+	github.com/alibabacloud-go/alidns-20150109/v5 v5.6.0
+	github.com/alibabacloud-go/darabonba-openapi v0.2.1
+	github.com/alibabacloud-go/tea v1.5.2
+	github.com/aliyun/credentials-go v1.4.5
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/gin-contrib/sessions v1.0.4
 	github.com/gin-gonic/gin v1.11.0
@@ -22,8 +26,16 @@ require (
 
 require (
 	github.com/Baozisoftware/qrcode-terminal-go v0.0.0-20170407111555-c0650d8dff0f // indirect
+	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.5 // indirect
+	github.com/alibabacloud-go/darabonba-openapi/v2 v2.2.4 // indirect
+	github.com/alibabacloud-go/debug v1.0.1 // indirect
+	github.com/alibabacloud-go/openapi-util v0.1.0 // indirect
+	github.com/alibabacloud-go/tea-utils v1.4.3 // indirect
+	github.com/alibabacloud-go/tea-utils/v2 v2.0.9 // indirect
+	github.com/alibabacloud-go/tea-xml v1.1.2 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
+	github.com/clbanning/mxj/v2 v2.7.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
@@ -39,6 +51,7 @@ require (
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/gorilla/sessions v1.4.0 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.6.0 // indirect
@@ -59,6 +72,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e // indirect
 	github.com/spf13/cast v1.9.2 // indirect
+	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	go.uber.org/mock v0.5.0 // indirect
@@ -70,6 +84,7 @@ require (
 	golang.org/x/text v0.34.0 // indirect
 	golang.org/x/tools v0.42.0 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
+	gopkg.in/ini.v1 v1.67.0 // indirect
 	modernc.org/libc v1.22.5 // indirect
 	modernc.org/mathutil v1.5.0 // indirect
 	modernc.org/memory v1.5.0 // indirect
