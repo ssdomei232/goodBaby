@@ -162,6 +162,16 @@ func HandleDeleteRule(c *gin.Context) {
 		return
 	}
 
+	ownerUID, err := getRuleOwnerUID(ruleID)
+	if err != nil {
+		response.ServerError(c, "获取规则所属用户失败")
+		return
+	}
+	if ownerUID != userInfo.ID {
+		response.Forbidden(c, "无权限操作该规则")
+		return
+	}
+
 	if err := DeleteRuleByID(ruleID, userInfo.ID); err != nil {
 		response.ServerError(c, "删除规则失败")
 		return

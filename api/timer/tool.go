@@ -70,3 +70,17 @@ func signTimer(timer *model.Timer) error {
 	timer.Triggered = false
 	return nil
 }
+
+// getTimerOwnerUID 获取 Timer 的所属用户 ID
+func getTimerOwnerUID(timerID uint) (uint, error) {
+	gormDB, err := db.GetGormDB()
+	if err != nil {
+		return 0, err
+	}
+
+	var timer model.Timer
+	if err := gormDB.Select("uid").Where("id = ?", timerID).First(&timer).Error; err != nil {
+		return 0, err
+	}
+	return timer.UID, nil
+}

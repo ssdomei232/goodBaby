@@ -103,3 +103,18 @@ func maskRules(rules []model.Rule) []model.Rule {
 	}
 	return masked
 }
+
+// getRuleOwnerUID 获取规则所属用户的 UID
+func getRuleOwnerUID(ruleID uint) (uint, error) {
+	gormDB, err := db.GetGormDB()
+	if err != nil {
+		return 0, err
+	}
+
+	var rule model.Rule
+	if err := gormDB.Select("uid").Where("id = ?", ruleID).First(&rule).Error; err != nil {
+		return 0, err
+	}
+
+	return rule.UID, nil
+}

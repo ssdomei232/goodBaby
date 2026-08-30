@@ -218,6 +218,18 @@ func HandleDeleteAccount(c *gin.Context) {
 		return
 	}
 
+	// 检查账号是否归属请求用户
+	ownerUID, err := getAccountOwnerUID(accountID)
+	if err != nil {
+		response.ServerError(c, "获取账号所属用户失败")
+		return
+	}
+
+	if ownerUID != userInfo.ID {
+		response.Forbidden(c, "无权限操作该账号")
+		return
+	}
+
 	// 删除相关规则
 	rules, err := getRulesByAccountID(accountID, userInfo.ID)
 	if err != nil {

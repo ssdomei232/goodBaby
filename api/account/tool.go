@@ -59,3 +59,17 @@ func maskAccounts(accounts []model.Account) []model.Account {
 	}
 	return masked
 }
+
+// getAccountOwnerUID 获取账号所属用户的 UID
+func getAccountOwnerUID(accountID uint) (uint, error) {
+	gormDB, err := db.GetGormDB()
+	if err != nil {
+		return 0, err
+	}
+
+	var account model.Account
+	if err := gormDB.Select("uid").Where("id = ?", accountID).First(&account).Error; err != nil {
+		return 0, err
+	}
+	return account.UID, nil
+}

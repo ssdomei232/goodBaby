@@ -40,6 +40,9 @@ func NotFound(c *gin.Context, msg string) { Fail(c, http.StatusNotFound, msg) }
 // ServerError 服务端错误
 func ServerError(c *gin.Context, msg string) { Fail(c, http.StatusInternalServerError, msg) }
 
+// Forbidden 无权限
+func Forbidden(c *gin.Context, msg string) { Fail(c, http.StatusForbidden, msg) }
+
 // FromError 按错误类型选择合适的状态码：
 // 参数校验错误返回 400，其余返回 500
 func FromError(c *gin.Context, err error, fallback string) {
