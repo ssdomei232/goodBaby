@@ -3,6 +3,7 @@ package ruleConfigChecker
 import (
 	"sync"
 
+	"github.com/ssdomei232/goodBaby/drivers/alidns"
 	"github.com/ssdomei232/goodBaby/drivers/bilibili"
 	"github.com/ssdomei232/goodBaby/drivers/dingtalk"
 	"github.com/ssdomei232/goodBaby/drivers/email"
@@ -32,6 +33,7 @@ func InitValidatorRegistry() *ValidatorRegistry {
 		r.Register(&fwalert.FwalertRuleValidator{})
 		r.Register(&rainyun.RainyunWorkorderRuleValidator{})
 		r.Register(&rainyun.RainyunRunAwayRuleValidator{})
+		r.Register(&alidns.AliDNSDeleteRecordRuleValidator{})
 
 		registry = r
 	})

@@ -3,6 +3,7 @@ package accountConfigChecker
 import (
 	"sync"
 
+	"github.com/ssdomei232/goodBaby/drivers/alidns"
 	"github.com/ssdomei232/goodBaby/drivers/bilibili"
 	"github.com/ssdomei232/goodBaby/drivers/email"
 	"github.com/ssdomei232/goodBaby/drivers/github"
@@ -26,6 +27,7 @@ func InitValidatorRegistry() *ValidatorRegistry {
 		r.Register(&github.GitHubAccountConfigValidator{})
 		r.Register(&onebot.OneBotAccountConfigValidator{})
 		r.Register(&rainyun.RainyunAccountConfigValidator{})
+		r.Register(&alidns.AliDNSAccountConfigValidator{})
 
 		registry = r
 	})

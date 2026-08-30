@@ -12,9 +12,7 @@ import (
 // RainyunAccountConfigValidator Rainyun账号配置验证器
 type RainyunAccountConfigValidator struct{}
 
-func (v *RainyunAccountConfigValidator) GetType() string {
-	return AccountType
-}
+func (v *RainyunAccountConfigValidator) GetType() string { return AccountType }
 
 func (v *RainyunAccountConfigValidator) Validate(config string) error {
 	// 解析配置

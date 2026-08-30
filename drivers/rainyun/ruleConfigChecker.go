@@ -11,7 +11,7 @@ import (
 type RainyunWorkorderRuleValidator struct{}
 
 func (v *RainyunWorkorderRuleValidator) GetType() string {
-	return RuleType
+	return RuleTypeWorkOrder
 }
 
 func (v *RainyunWorkorderRuleValidator) Validate(configJSON string) error {
@@ -33,7 +33,7 @@ func (v *RainyunWorkorderRuleValidator) Validate(configJSON string) error {
 
 func (v *RainyunWorkorderRuleValidator) Meta() meta.RuleMeta {
 	return meta.RuleMeta{
-		Type:        RuleType,
+		Type:        RuleTypeWorkOrder,
 		Label:       "发送雨云工单",
 		Description: "触发时发送雨云工单",
 		AccountType: AccountType,
@@ -47,7 +47,7 @@ func (v *RainyunWorkorderRuleValidator) Meta() meta.RuleMeta {
 type RainyunRunAwayRuleValidator struct{}
 
 func (v *RainyunRunAwayRuleValidator) GetType() string {
-	return "rainyun-runaway"
+	return RuleTypeRunAway
 }
 
 func (v *RainyunRunAwayRuleValidator) Validate(configJSON string) error {
@@ -65,7 +65,7 @@ func (v *RainyunRunAwayRuleValidator) Validate(configJSON string) error {
 
 func (v *RainyunRunAwayRuleValidator) Meta() meta.RuleMeta {
 	return meta.RuleMeta{
-		Type:        "rainyun-runaway",
+		Type:        RuleTypeRunAway,
 		Label:       "重置雨云账号中所有云服务器(一键跑路)",
 		Description: "触发时会重装雨云账号下所有云服务器来实现跑路",
 		AccountType: AccountType,

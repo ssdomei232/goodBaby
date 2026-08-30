@@ -11,7 +11,8 @@ import (
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-func getAliDNSClient(rule *model.Rule) (client *alidns.Client, err error) {
+// getAliDNSClient initializes and returns an Alibaba Cloud DNS client based on the provided rule's account configuration. It retrieves the account configuration from the database, sets up the necessary credentials, and creates a new client instance for interacting with Alibaba Cloud DNS services.
+func getAliDNSClientFromRule(rule *model.Rule) (client *alidns.Client, err error) {
 	var accountConfig AliDNSAccount
 
 	// get config
@@ -19,11 +20,15 @@ func getAliDNSClient(rule *model.Rule) (client *alidns.Client, err error) {
 		return nil, err
 	}
 
+	return getAliDNSClient(accountConfig.AK, accountConfig.SK)
+}
+
+func getAliDNSClient(ak string, sk string) (client *alidns.Client, err error) {
 	// init aliyun account config
 	credentialsConfig := new(credentials.Config).
 		SetType("access_key").
-		SetAccessKeyId(accountConfig.AK).
-		SetAccessKeySecret(accountConfig.SK)
+		SetAccessKeyId(ak).
+		SetAccessKeySecret(sk)
 	akCredential, err := credentials.NewCredential(credentialsConfig)
 	if err != nil {
 		return nil, err
@@ -38,6 +43,7 @@ func getAliDNSClient(rule *model.Rule) (client *alidns.Client, err error) {
 	return client, nil
 }
 
+// getDeleteRecordConfig retrieves the configuration for deleting DNS records from the provided rule. It unmarshals the rule's configuration JSON into a DeleteRecordConfig structure and returns it.
 func getDeleteRecordConfig(rule *model.Rule) (*DeleteRecordConfig, error) {
 	var deleteRecordConfig DeleteRecordConfig
 

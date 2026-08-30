@@ -11,7 +11,7 @@ import (
 type RainyunWorkorderExecutor struct{}
 
 func (e *RainyunWorkorderExecutor) GetType() string {
-	return RuleType
+	return RuleTypeWorkOrder
 }
 
 func (e *RainyunWorkorderExecutor) Execute(ctx context.Context, rule *model.Rule) error {
@@ -24,7 +24,7 @@ func (e *RainyunWorkorderExecutor) Execute(ctx context.Context, rule *model.Rule
 type RainyunRunAwayExecutor struct{}
 
 func (e *RainyunRunAwayExecutor) GetType() string {
-	return "rainyun-runaway"
+	return RuleTypeRunAway
 }
 
 func (e *RainyunRunAwayExecutor) Execute(ctx context.Context, rule *model.Rule) error {
