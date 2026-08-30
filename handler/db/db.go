@@ -138,5 +138,6 @@ func AutoMigrate(gormDB *gorm.DB) error {
 		&model.Rule{},
 		&model.Account{},
 		&model.ExecutionLog{},
+		&model.MessageGateway{},
 	)
 }

@@ -40,6 +40,7 @@ const router = createRouter({
           component: () => import('@/views/AccountsView.vue'),
           meta: { title: '账号' },
         },
+        { path: 'gateways', name: 'gateways', component: () => import('@/views/GatewaysView.vue'), meta: { title: '消息网关' } },
         {
           path: 'logs',
           name: 'logs',

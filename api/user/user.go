@@ -210,6 +210,27 @@ func HandleUpdateNotifyConfig(c *gin.Context) {
 // AuthMiddleware 认证中间件，同时把当前用户放进 context 供后续 handler 复用
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		apiKey := c.GetHeader("X-API-Key")
+		if apiKey == "" {
+			auth := c.GetHeader("Authorization")
+			const prefix = "Bearer "
+			if len(auth) > len(prefix) && auth[:len(prefix)] == prefix {
+				apiKey = auth[len(prefix):]
+			}
+		}
+		if apiKey != "" {
+			gormDB, err := db.GetGormDB()
+			if err == nil {
+				var user model.User
+				if gormDB.Where("api_key = ?", apiKey).First(&user).Error == nil {
+					c.Set(contextKey, &user)
+					c.Next()
+					return
+				}
+			}
+			response.AbortWith(c, http.StatusUnauthorized, "API Key 无效")
+			return
+		}
 		session := sessions.Default(c)
 		uid, ok := session.Get("uid").(uint)
 		if !ok {

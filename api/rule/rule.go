@@ -67,6 +67,7 @@ func HandleCreateRule(c *gin.Context) {
 		UID:        userInfo.ID,
 		Name:       req.Name,
 		TimerID:    req.TimerID,
+		GatewayID:  req.GatewayID,
 		AccountID:  req.AccountID,
 		Type:       req.Type,
 		ConfigJson: req.ConfigJson,
@@ -123,6 +124,7 @@ func HandleEditRule(c *gin.Context) {
 	updated.Name = req.Name
 	updated.Type = req.Type
 	updated.TimerID = req.TimerID
+	updated.GatewayID = req.GatewayID
 	updated.AccountID = req.AccountID
 	updated.Enabled = boolOr(req.Enabled, existing.Enabled)
 	// 前端提交的敏感字段可能是掩码占位符，用旧配置补回

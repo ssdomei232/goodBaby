@@ -1,6 +1,8 @@
 package user
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -48,9 +50,42 @@ func createUser(u *model.User) error {
 		return err
 	}
 	u.Password = hashedPassword
+	if u.APIKey == "" {
+		u.APIKey, err = generateAPIKey()
+		if err != nil {
+			return err
+		}
+	}
 	u.CreateAt = time.Now().Unix()
 
 	return gormDB.Create(u).Error
+}
+
+func generateAPIKey() (string, error) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return "gb_" + hex.EncodeToString(b), nil
+}
+
+func ensureAPIKey(user *model.User) error {
+	if user.APIKey != "" {
+		return nil
+	}
+	key, err := generateAPIKey()
+	if err != nil {
+		return err
+	}
+	gormDB, err := db.GetGormDB()
+	if err != nil {
+		return err
+	}
+	if err := gormDB.Model(&model.User{}).Where("id = ? AND (api_key IS NULL OR api_key = '')", user.ID).Update("api_key", key).Error; err != nil {
+		return err
+	}
+	user.APIKey = key
+	return nil
 }
 
 // IsUsernameTaken 用户名是否已被占用
@@ -132,6 +167,9 @@ func GetUserByID(id uint) (*model.User, error) {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, ErrUserNotFound
 		}
+		return nil, err
+	}
+	if err := ensureAPIKey(&user); err != nil {
 		return nil, err
 	}
 	return &user, nil

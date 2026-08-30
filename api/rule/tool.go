@@ -59,12 +59,20 @@ func checkRuleConfigAccountAndTimerExist(rule *model.Rule, requiredAccountType s
 	}
 
 	var count int64
-	if err := gormDB.Model(&model.Timer{}).
-		Where("id = ? AND uid = ?", rule.TimerID, rule.UID).Count(&count).Error; err != nil {
-		return err
-	}
-	if count == 0 {
-		return model.ErrValidation("关联的 Timer 不存在")
+	if rule.TimerID != 0 {
+		if err := gormDB.Model(&model.Timer{}).Where("id = ? AND uid = ?", rule.TimerID, rule.UID).Count(&count).Error; err != nil {
+			return err
+		}
+		if count == 0 {
+			return model.ErrValidation("关联的 Timer 不存在")
+		}
+	} else {
+		if err := gormDB.Model(&model.MessageGateway{}).Where("id = ? AND uid = ?", rule.GatewayID, rule.UID).Count(&count).Error; err != nil {
+			return err
+		}
+		if count == 0 {
+			return model.ErrValidation("关联的消息网关不存在")
+		}
 	}
 
 	if requiredAccountType == "" {

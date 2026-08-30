@@ -7,6 +7,7 @@ import type {
   DashboardOverview,
   ExecutionLog,
   LogPage,
+  MessageGateway,
   Providers,
   Rule,
   RuleRequest,
@@ -79,6 +80,12 @@ export const logApi = {
   list: (params: { page?: number; page_size?: number; rule_id?: number; success?: string }) =>
     api.get<LogPage>('/logs/', params),
   clear: () => api.delete<string>('/logs/'),
+}
+
+export const gatewayApi = {
+  list: () => api.get<MessageGateway[]>('/gateways/'),
+  create: (name: string) => api.post<MessageGateway>('/gateways/', { name }),
+  remove: (id: number) => api.delete<string>(`/gateways/${id}`),
 }
 
 export const adminApi = {

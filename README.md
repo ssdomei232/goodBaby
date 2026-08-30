@@ -101,6 +101,20 @@ cd web/frontend && npm run dev
 
 **第一个注册的用户自动成为管理员**。
 
+### API Key
+
+每个用户在注册时会自动生成 API Key，可在 WebUI 的“设置”页面查看。调用需要认证的 API 时，在请求头中任选其一：
+
+```http
+X-API-Key: gb_<your-api-key>
+```
+
+或：
+
+```http
+Authorization: Bearer gb_<your-api-key>
+```
+
 ## 数据库
 
 默认 SQLite，可选 PostgreSQL，详见 [docs/database.md](docs/database.md)。

@@ -14,6 +14,13 @@ const userStore = useUserStore()
 
 const isAdmin = computed(() => userStore.user?.is_admin === true)
 
+async function copyApiKey() {
+  const key = userStore.user?.api_key
+  if (!key) return
+  await navigator.clipboard?.writeText(key)
+  ElMessage.success('API Key 已复制')
+}
+
 // ---- 系统配置（仅管理员） ----
 const adminLoading = ref(false)
 const adminSaving = ref(false)
@@ -165,6 +172,13 @@ onMounted(async () => {
         </el-descriptions-item>
         <el-descriptions-item label="注册时间">
           {{ formatDateTime(userStore.user?.create_at ?? 0) }}
+        </el-descriptions-item>
+        <el-descriptions-item label="API Key">
+          <el-input :model-value="userStore.user?.api_key ?? ''" readonly style="max-width: 380px">
+            <template #append>
+              <el-button title="复制 API Key" @click="copyApiKey">复制</el-button>
+            </template>
+          </el-input>
         </el-descriptions-item>
       </el-descriptions>
     </el-card>

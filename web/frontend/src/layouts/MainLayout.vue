@@ -7,6 +7,7 @@ import {
   Timer as TimerIcon,
   Operation,
   User,
+  Connection,
   Document,
   Setting,
   SwitchButton,
@@ -38,6 +39,7 @@ const menus = [
   { path: '/timers', title: '定时器', icon: TimerIcon },
   { path: '/rules', title: '规则', icon: Operation },
   { path: '/accounts', title: '账号', icon: User },
+  { path: '/gateways', title: '消息网关', icon: Connection },
   { path: '/logs', title: '执行日志', icon: Document },
   { path: '/settings', title: '设置', icon: Setting },
 ]

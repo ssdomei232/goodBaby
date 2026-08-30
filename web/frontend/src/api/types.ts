@@ -10,7 +10,8 @@ export interface UserInfo {
   create_at: number
   username: string
   is_admin: boolean
-  dingtalk_config: string | null
+	dingtalk_config: string | null
+	api_key: string
 }
 
 export interface Timer {
@@ -40,6 +41,7 @@ export interface Rule {
   id: number
   uid: number
   timer_id: number
+  gateway_id: number
   name: string
   account_id: number
   type: string
@@ -48,9 +50,12 @@ export interface Rule {
   create_at: number
 }
 
+export interface MessageGateway { id: number; uid: number; name: string; token: string; create_at: number }
+
 export interface RuleRequest {
   name: string
   timer_id: number
+  gateway_id?: number
   account_id: number
   type: string
   config_json: string

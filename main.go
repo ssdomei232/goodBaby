@@ -10,6 +10,7 @@ import (
 	"github.com/ssdomei232/goodBaby/api/account"
 	"github.com/ssdomei232/goodBaby/api/admin"
 	"github.com/ssdomei232/goodBaby/api/dashboard"
+	"github.com/ssdomei232/goodBaby/api/gateway"
 	apilog "github.com/ssdomei232/goodBaby/api/log"
 	apimeta "github.com/ssdomei232/goodBaby/api/meta"
 	"github.com/ssdomei232/goodBaby/api/rule"
@@ -65,6 +66,7 @@ func main() {
 		v1.GET("/site", apimeta.HandleGetSiteInfo)
 		v1.POST("/user/registry", user.HandleRegistry)
 		v1.POST("/user/login", user.HandleLogin)
+		v1.POST("/gateways/:token/webhook", gateway.HandleWebhook)
 	}
 
 	// 需要认证的路由组
@@ -114,6 +116,13 @@ func main() {
 			accounts.DELETE("/:accountID", account.HandleDeleteAccount)
 		}
 
+		gateways := authorized.Group("/gateways")
+		{
+			gateways.GET("/", gateway.HandleList)
+			gateways.POST("/", gateway.HandleCreate)
+			gateways.DELETE("/:gatewayID", gateway.HandleDelete)
+		}
+
 		logs := authorized.Group("/logs")
 		{
 			logs.GET("/", apilog.HandleGetLogs)
@@ -151,7 +160,7 @@ func corsMiddleware(allowedOrigins []string) gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Origin", origin)
 			c.Header("Access-Control-Allow-Credentials", "true")
 			c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-			c.Header("Access-Control-Allow-Headers", "Content-Type")
+			c.Header("Access-Control-Allow-Headers", "Content-Type, X-API-Key, Authorization")
 			c.Header("Vary", "Origin")
 		}
 

@@ -2,9 +2,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, VideoPlay } from '@element-plus/icons-vue'
-import { accountApi, ruleApi, timerApi } from '@/api'
+import { accountApi, gatewayApi, ruleApi, timerApi } from '@/api'
 import { ApiError } from '@/api/client'
-import type { Account, Rule, Timer } from '@/api/types'
+import type { Account, MessageGateway, Rule, Timer } from '@/api/types'
 import { useMetaStore } from '@/stores/meta'
 import { formatDateTime } from '@/utils/format'
 import ConfigForm from '@/components/ConfigForm.vue'
@@ -16,6 +16,7 @@ const metaStore = useMetaStore()
 
 const rules = ref<Rule[]>([])
 const timers = ref<Timer[]>([])
+const gateways = ref<MessageGateway[]>([])
 const accounts = ref<Account[]>([])
 const loading = ref(false)
 const testingId = ref<number | null>(null)
@@ -30,6 +31,7 @@ const form = ref<{
   name: string
   type: string
   timer_id: number
+  gateway_id: number
   account_id: number | undefined
   enabled: boolean
   config_json: string
@@ -37,6 +39,7 @@ const form = ref<{
   name: '',
   type: '',
   timer_id: 0,
+  gateway_id: 0,
   account_id: undefined,
   enabled: true,
   config_json: '',
@@ -69,14 +72,16 @@ function accountName(id: number): string {
 async function refresh() {
   loading.value = true
   try {
-    const [ruleList, timerList, accountList] = await Promise.all([
+    const [ruleList, timerList, accountList, gatewayList] = await Promise.all([
       ruleApi.list(),
       timerApi.list(),
       accountApi.list(),
+      gatewayApi.list(),
     ])
     rules.value = ruleList
     timers.value = timerList
     accounts.value = accountList
+    gateways.value = gatewayList
   } catch (error) {
     ElMessage.error(error instanceof ApiError ? error.message : '加载失败')
   } finally {
@@ -85,7 +90,7 @@ async function refresh() {
 }
 
 function openCreate() {
-  if (timers.value.length === 0) {
+  if (timers.value.length === 0 && gateways.value.length === 0) {
     ElMessage.warning('请先在“定时器”页面创建一个定时器')
     return
   }
@@ -94,6 +99,7 @@ function openCreate() {
     name: '',
     type: metaStore.ruleMetas[0]?.type ?? '',
     timer_id: timers.value[0]?.id ?? 0,
+    gateway_id: 0,
     account_id: undefined,
     enabled: true,
     config_json: '',
@@ -107,6 +113,7 @@ function openEdit(rule: Rule) {
     name: rule.name,
     type: rule.type,
     timer_id: rule.timer_id,
+    gateway_id: rule.gateway_id || 0,
     account_id: rule.account_id || undefined,
     enabled: rule.enabled,
     config_json: rule.config_json,
@@ -133,6 +140,7 @@ async function save() {
     name: form.value.name,
     type: form.value.type,
     timer_id: form.value.timer_id,
+    gateway_id: form.value.gateway_id,
     account_id: form.value.account_id ?? 0,
     enabled: form.value.enabled,
     config_json: form.value.config_json,
@@ -162,6 +170,7 @@ async function toggleEnabled(rule: Rule) {
       name: rule.name,
       type: rule.type,
       timer_id: rule.timer_id,
+      gateway_id: rule.gateway_id,
       account_id: rule.account_id,
       enabled: rule.enabled,
       config_json: rule.config_json,
@@ -308,9 +317,13 @@ onMounted(async () => {
           </el-select>
           <div v-if="currentMeta?.description" class="muted">{{ currentMeta.description }}</div>
         </el-form-item>
-        <el-form-item label="关联定时器" required>
-          <el-select v-model="form.timer_id" style="width: 100%">
+        <el-form-item label="关联定时器/消息网关" required>
+          <div class="source-hint muted">规则只能选择一种触发方式</div>
+          <el-select v-model="form.timer_id" class="source-select" clearable placeholder="定时器触发">
             <el-option v-for="t in timers" :key="t.id" :label="t.name" :value="t.id" />
+          </el-select>
+          <el-select v-model="form.gateway_id" clearable placeholder="消息网关（可选）" style="width: 100%; margin-top: 8px" @change="form.gateway_id && (form.timer_id = 0)">
+            <el-option v-for="g in gateways" :key="g.id" :label="g.name" :value="g.id" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="currentMeta?.account_type" label="关联账号" required>
@@ -362,6 +375,9 @@ onMounted(async () => {
 .filter-select {
   width: 200px;
 }
+
+.source-select { width: 100%; margin-top: 8px; }
+.source-hint { margin-bottom: 2px; }
 
 @media (max-width: 768px) {
   .header-tools {
