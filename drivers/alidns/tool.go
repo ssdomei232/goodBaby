@@ -1,15 +1,17 @@
 package alidns
 
 import (
+	"encoding/json"
+
 	alidns "github.com/alibabacloud-go/alidns-20150109/v5/client"
-	openapi "github.com/alibabacloud-go/darabonba-openapi/client"
+	openapi "github.com/alibabacloud-go/darabonba-openapi/v2/client"
 	"github.com/alibabacloud-go/tea/tea"
 	"github.com/aliyun/credentials-go/credentials"
 	"github.com/ssdomei232/goodBaby/handler/db"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-func GetAliDNSClient(rule *model.Rule) (client *alidns.Client, err error) {
+func getAliDNSClient(rule *model.Rule) (client *alidns.Client, err error) {
 	var accountConfig AliDNSAccount
 
 	// get config
@@ -34,4 +36,14 @@ func GetAliDNSClient(rule *model.Rule) (client *alidns.Client, err error) {
 	client, _ = alidns.NewClient(config)
 
 	return client, nil
+}
+
+func getDeleteRecordConfig(rule *model.Rule) (*DeleteRecordConfig, error) {
+	var deleteRecordConfig DeleteRecordConfig
+
+	if err := json.Unmarshal([]byte(rule.ConfigJson), &deleteRecordConfig); err != nil {
+		return nil, err
+	}
+
+	return &deleteRecordConfig, nil
 }
