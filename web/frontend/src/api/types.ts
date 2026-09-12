@@ -41,6 +41,18 @@ export interface Rule {
   id: number
   uid: number
   timer_id: number
+  name: string
+  account_id: number
+  type: string
+  config_json: string
+  enabled: boolean
+  create_at: number
+}
+
+/** 消息网关规则：由外部系统投递到网关的消息触发，与定时器规则分开存储 */
+export interface GatewayRule {
+  id: number
+  uid: number
   gateway_id: number
   name: string
   account_id: number
@@ -50,12 +62,27 @@ export interface Rule {
   create_at: number
 }
 
-export interface MessageGateway { id: number; uid: number; name: string; token: string; create_at: number }
+export interface MessageGateway {
+  id: number
+  uid: number
+  name: string
+  type: string
+  token: string
+  create_at: number
+}
 
 export interface RuleRequest {
   name: string
   timer_id: number
-  gateway_id?: number
+  account_id: number
+  type: string
+  config_json: string
+  enabled?: boolean
+}
+
+export interface GatewayRuleRequest {
+  name: string
+  gateway_id: number
   account_id: number
   type: string
   config_json: string
@@ -94,6 +121,8 @@ export interface MetaField {
   placeholder?: string
   help?: string
   secret?: boolean
+  /** 由消息网关投递的请求内容提供，网关规则页面不需要用户填写 */
+  gateway_message?: boolean
   default?: unknown
 }
 
@@ -115,9 +144,18 @@ export interface RuleMeta {
   fields: MetaField[]
 }
 
+export interface GatewayMeta {
+  type: string
+  label: string
+  description?: string
+  docs?: string
+  payload_hint?: string
+}
+
 export interface Providers {
   accounts: AccountMeta[]
   rules: RuleMeta[]
+  gateways: GatewayMeta[]
 }
 
 export interface ExecutionLog {
@@ -127,7 +165,9 @@ export interface ExecutionLog {
   rule_name: string
   rule_type: string
   timer_id: number
-  trigger: 'timer' | 'manual' | 'remind'
+  gateway_id: number
+  gateway_rule_id: number
+  trigger: 'timer' | 'manual' | 'remind' | 'gateway'
   success: boolean
   message: string
   create_at: number
@@ -145,11 +185,19 @@ export interface DashboardOverview {
   enabled_timers: number
   triggered_count: number
   rule_count: number
+  gateway_count: number
+  gateway_rule_count: number
   account_count: number
   server_time: number
   recent_logs: ExecutionLog[]
   urgent_timer?: Timer
   urgent_seconds_left?: number
+}
+
+/** 删除账号时会被一并删除的规则 */
+export interface AccountDeleteImpact {
+  rules: Rule[]
+  gateway_rules: GatewayRule[]
 }
 
 export interface SiteInfo {

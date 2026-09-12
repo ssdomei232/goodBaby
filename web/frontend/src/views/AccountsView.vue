@@ -94,9 +94,10 @@ async function test(account: Account) {
 async function remove(account: Account) {
   try {
     const affected = await accountApi.checkDelete(account.id)
+    const affectedRules = [...affected.rules, ...affected.gateway_rules]
     const warning =
-      affected.length > 0
-        ? `删除后，使用该账号的 ${affected.length} 条规则也会被一并删除：${affected
+      affectedRules.length > 0
+        ? `删除后，使用该账号的 ${affectedRules.length} 条规则也会被一并删除：${affectedRules
             .map((r) => r.name)
             .join('、')}`
         : '没有规则使用该账号。'

@@ -1,7 +1,6 @@
 package alidns
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/ssdomei232/goodBaby/internal/meta"
@@ -15,9 +14,9 @@ func (v *AliDNSDeleteRecordRuleValidator) GetType() string {
 }
 
 func (v *AliDNSDeleteRecordRuleValidator) Validate(configJSON string) error {
-	var config DeleteRecordConfig
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return fmt.Errorf("解析阿里云删除记录规则配置失败: %v", err)
+	config, err := ParseDeleteRecordConfig(configJSON)
+	if err != nil {
+		return err
 	}
 
 	if config.RecordID == "" {

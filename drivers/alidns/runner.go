@@ -2,7 +2,6 @@ package alidns
 
 import (
 	"context"
-	"log"
 
 	"github.com/ssdomei232/goodBaby/model"
 )
@@ -14,8 +13,16 @@ func (e *DeleteAliDNSRecordExecutor) GetType() string {
 	return RuleTypeDeleteRecord
 }
 
-func (e *DeleteAliDNSRecordExecutor) Execute(ctx context.Context, rule *model.Rule) error {
-	log.Printf("执行删除阿里云DNS记录规则: %s (ID: %d)", rule.Name, rule.ID)
+func (e *DeleteAliDNSRecordExecutor) Execute(ctx context.Context, task *model.RuleTask) error {
+	account, err := ParseAccountConfig(task.AccountConfig())
+	if err != nil {
+		return err
+	}
 
-	return deleteAliDNSRecord(ctx, rule)
+	config, err := ParseDeleteRecordConfig(task.Rule.ConfigJson)
+	if err != nil {
+		return err
+	}
+
+	return DeleteRecord(ctx, account, config)
 }

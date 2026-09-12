@@ -1,7 +1,6 @@
 package bilibili
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/ssdomei232/goodBaby/internal/meta"
@@ -15,9 +14,9 @@ func (v *BilibiliDynamicRuleValidator) GetType() string {
 }
 
 func (v *BilibiliDynamicRuleValidator) Validate(configJSON string) error {
-	var config BiliDynamicConfig
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return fmt.Errorf("解析B站动态规则配置失败: %v", err)
+	config, err := ParseDynamicConfig(configJSON)
+	if err != nil {
+		return err
 	}
 
 	if config.Msg == "" {
@@ -39,9 +38,9 @@ func (v *BilibiliPrivateMessageRuleValidator) GetType() string {
 }
 
 func (v *BilibiliPrivateMessageRuleValidator) Validate(configJSON string) error {
-	var config BiliPrivateMessageConfig
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return fmt.Errorf("解析B站私信规则配置失败: %v", err)
+	config, err := ParsePrivateMessageConfig(configJSON)
+	if err != nil {
+		return err
 	}
 
 	if config.Msg == "" {
@@ -77,7 +76,7 @@ func (v *BilibiliPrivateMessageRuleValidator) Meta() meta.RuleMeta {
 				Placeholder: "2",
 				Help:        "对方空间地址 space.bilibili.com/ 后面的那串数字",
 			},
-			{Key: "msg", Label: "私信内容", Type: meta.FieldTextarea, Required: true},
+			{Key: "msg", Label: "私信内容", Type: meta.FieldTextarea, Required: true, GatewayMessage: true},
 		},
 	}
 }
@@ -91,11 +90,12 @@ func (v *BilibiliDynamicRuleValidator) Meta() meta.RuleMeta {
 		AccountType: AccountType,
 		Fields: []meta.Field{
 			{
-				Key:         "msg",
-				Label:       "动态内容",
-				Type:        meta.FieldTextarea,
-				Required:    true,
-				Placeholder: "要发送的动态正文",
+				Key:            "msg",
+				Label:          "动态内容",
+				Type:           meta.FieldTextarea,
+				Required:       true,
+				GatewayMessage: true,
+				Placeholder:    "要发送的动态正文",
 			},
 		},
 	}

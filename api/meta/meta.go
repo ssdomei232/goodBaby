@@ -7,16 +7,18 @@ import (
 	"github.com/ssdomei232/goodBaby/api/user"
 	"github.com/ssdomei232/goodBaby/configs"
 	"github.com/ssdomei232/goodBaby/internal/accountConfigChecker"
+	"github.com/ssdomei232/goodBaby/internal/gateway"
 	"github.com/ssdomei232/goodBaby/internal/ruleConfigChecker"
 )
 
-// HandleGetProviders 返回所有账号类型与规则类型的元数据
+// HandleGetProviders 返回所有账号类型、规则类型与消息网关类型的元数据
 //
 // 前端据此动态渲染配置表单，新增驱动时前端无需改动。
 func HandleGetProviders(c *gin.Context) {
 	response.OK(c, gin.H{
 		"accounts": accountConfigChecker.InitValidatorRegistry().Metas(),
 		"rules":    ruleConfigChecker.InitValidatorRegistry().Metas(),
+		"gateways": gateway.InitGatewayRegistry().Metas(),
 	})
 }
 

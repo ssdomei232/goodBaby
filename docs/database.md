@@ -82,8 +82,11 @@ volumes:
 
 两种数据库之间**没有**自动数据迁移。切换驱动后是一个全新的空库，需要重新注册账号并配置规则。
 
-如果要搬运已有数据，得自己从 SQLite 导出再导入 PostgreSQL（表结构一致：`users` / `timers` / `rules` / `accounts` / `execution_logs`）。
+如果要搬运已有数据，得自己从 SQLite 导出再导入 PostgreSQL（表结构一致：`users` / `timers` / `rules` / `gateway_rules` / `message_gateways` / `accounts` / `execution_logs`）。
 
 ## 建表
 
 首次启动会自动执行 `AutoMigrate` 建表并补齐新增字段，不需要手动执行 SQL。
+
+升级到 v2.2.0 时，如果 `rules` 表里还有靠 `gateway_id` 标识的历史消息网关规则，
+启动阶段会自动把它们搬到 `gateway_rules` 表，不需要手工处理。

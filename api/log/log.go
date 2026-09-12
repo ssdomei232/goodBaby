@@ -37,6 +37,9 @@ func HandleGetLogs(c *gin.Context) {
 	if ruleID := c.Query("rule_id"); ruleID != "" {
 		query = query.Where("rule_id = ?", ruleID)
 	}
+	if gatewayRuleID := c.Query("gateway_rule_id"); gatewayRuleID != "" {
+		query = query.Where("gateway_rule_id = ?", gatewayRuleID)
+	}
 	if success := c.Query("success"); success == "true" || success == "false" {
 		query = query.Where("success = ?", success == "true")
 	}

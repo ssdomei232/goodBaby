@@ -2,7 +2,6 @@ package github
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/google/go-github/v84/github"
@@ -18,7 +17,7 @@ func (v *GitHubAccountConfigValidator) GetType() string {
 }
 
 func (v *GitHubAccountConfigValidator) Validate(config string) error {
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -35,7 +34,7 @@ func (v *GitHubAccountConfigValidator) Validate(config string) error {
 
 // Test 用 token 拉一次当前用户信息，验证 token 是否有效
 func (v *GitHubAccountConfigValidator) Test(config string) error {
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -64,12 +63,4 @@ func (v *GitHubAccountConfigValidator) Meta() meta.AccountMeta {
 			{Key: "owner", Label: "仓库所有者", Type: meta.FieldString, Required: true, Placeholder: "your-github-name", Help: "用户名或组织名"},
 		},
 	}
-}
-
-func parseAccount(config string) (*GithubAccount, error) {
-	var cfg GithubAccount
-	if err := json.Unmarshal([]byte(config), &cfg); err != nil {
-		return nil, fmt.Errorf("解析GitHub账号配置失败: %v", err)
-	}
-	return &cfg, nil
 }

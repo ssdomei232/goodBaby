@@ -31,8 +31,10 @@ func HandleGetOverview(c *gin.Context) {
 		return
 	}
 
-	var ruleCount, accountCount int64
+	var ruleCount, gatewayCount, gatewayRuleCount, accountCount int64
 	gormDB.Model(&model.Rule{}).Where("uid = ?", userInfo.ID).Count(&ruleCount)
+	gormDB.Model(&model.MessageGateway{}).Where("uid = ?", userInfo.ID).Count(&gatewayCount)
+	gormDB.Model(&model.GatewayRule{}).Where("uid = ?", userInfo.ID).Count(&gatewayRuleCount)
 	gormDB.Model(&model.Account{}).Where("uid = ?", userInfo.ID).Count(&accountCount)
 
 	recentLogs := []model.ExecutionLog{}
@@ -62,13 +64,15 @@ func HandleGetOverview(c *gin.Context) {
 	}
 
 	overview := gin.H{
-		"timer_count":     len(timers),
-		"enabled_timers":  enabledCount,
-		"triggered_count": triggeredCount,
-		"rule_count":      ruleCount,
-		"account_count":   accountCount,
-		"server_time":     now,
-		"recent_logs":     recentLogs,
+		"timer_count":        len(timers),
+		"enabled_timers":     enabledCount,
+		"triggered_count":    triggeredCount,
+		"rule_count":         ruleCount,
+		"gateway_count":      gatewayCount,
+		"gateway_rule_count": gatewayRuleCount,
+		"account_count":      accountCount,
+		"server_time":        now,
+		"recent_logs":        recentLogs,
 	}
 
 	if urgent != nil {

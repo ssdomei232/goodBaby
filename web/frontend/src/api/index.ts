@@ -6,11 +6,14 @@ import type {
   AdminConfigResponse,
   DashboardOverview,
   ExecutionLog,
+  GatewayRule,
+  GatewayRuleRequest,
   LogPage,
   MessageGateway,
   Providers,
   Rule,
   RuleRequest,
+  AccountDeleteImpact,
   SiteInfo,
   Timer,
   TimerRequest,
@@ -66,13 +69,22 @@ export const ruleApi = {
   remove: (id: number) => api.delete<string>(`/rules/${id}`),
 }
 
+export const gatewayRuleApi = {
+  list: (gatewayId?: number) =>
+    api.get<GatewayRule[]>('/gateway-rules/', gatewayId ? { gateway_id: gatewayId } : undefined),
+  create: (body: GatewayRuleRequest) => api.post<GatewayRule>('/gateway-rules/', body),
+  update: (id: number, body: GatewayRuleRequest) => api.put<GatewayRule>(`/gateway-rules/${id}`, body),
+  test: (id: number) => api.post<string>(`/gateway-rules/${id}/test`),
+  remove: (id: number) => api.delete<string>(`/gateway-rules/${id}`),
+}
+
 export const accountApi = {
   list: (type?: string) =>
     api.get<Account[]>('/accounts/', type ? { type } : undefined),
   create: (body: AccountRequest) => api.post<Account>('/accounts/', body),
   update: (id: number, body: AccountRequest) => api.put<Account>(`/accounts/${id}`, body),
   test: (id: number) => api.post<string>(`/accounts/${id}/test`),
-  checkDelete: (id: number) => api.get<Rule[]>(`/accounts/${id}/check`),
+  checkDelete: (id: number) => api.get<AccountDeleteImpact>(`/accounts/${id}/check`),
   remove: (id: number) => api.delete<string>(`/accounts/${id}`),
 }
 
@@ -84,7 +96,7 @@ export const logApi = {
 
 export const gatewayApi = {
   list: () => api.get<MessageGateway[]>('/gateways/'),
-  create: (name: string) => api.post<MessageGateway>('/gateways/', { name }),
+  create: (name: string, type: string) => api.post<MessageGateway>('/gateways/', { name, type }),
   remove: (id: number) => api.delete<string>(`/gateways/${id}`),
 }
 

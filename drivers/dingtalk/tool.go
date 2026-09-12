@@ -2,19 +2,27 @@ package dingtalk
 
 import (
 	"encoding/json"
-
-	"github.com/ssdomei232/goodBaby/model"
+	"fmt"
 )
 
-func getDingTalkConfigFromUser(user *model.User) *DingTalkConfig {
-	if user.DingTalkConfig == nil {
-		return nil
+// ParseAccountConfig 解析钉钉机器人凭据配置
+func ParseAccountConfig(config string) (*DingTalkConfig, error) {
+	if config == "" {
+		return nil, fmt.Errorf("解析钉钉机器人配置失败: 配置为空")
 	}
 
-	var config DingTalkConfig
-	err := json.Unmarshal([]byte(*user.DingTalkConfig), &config)
-	if err != nil {
-		return nil
+	var account DingTalkConfig
+	if err := json.Unmarshal([]byte(config), &account); err != nil {
+		return nil, fmt.Errorf("解析钉钉机器人配置失败: %v", err)
 	}
-	return &config
+	return &account, nil
+}
+
+// ParseRuleConfig 解析钉钉规则配置
+func ParseRuleConfig(configJSON string) (*DingTalkRuleConfig, error) {
+	var config DingTalkRuleConfig
+	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
+		return nil, fmt.Errorf("解析钉钉规则配置失败: %v", err)
+	}
+	return &config, nil
 }

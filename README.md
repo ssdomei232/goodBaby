@@ -21,6 +21,8 @@
   * 发送钉钉机器人消息
   * 公开 GitHub 仓库
 * **账号 (Account)**：集中管理第三方凭据，支持连通性测试，敏感字段(密码/Cookie/Token)不会回显
+* **消息网关 (Gateway)**：为外部系统生成 Webhook 地址，投递进来的消息会触发绑定在该网关上的「网关规则」
+* **网关规则**：与定时器规则分开存储、分开管理，规则里的消息字段(msg / message / body)会被投递内容替换
 * **执行日志**：每次规则执行与提醒都有记录，规则支持手动测试
 * **配置测试**：账号可一键测试连通性；规则可手动触发验证
 
@@ -134,12 +136,25 @@ Authorization: Bearer gb_<your-api-key>
 * [钉钉机器人](docs/dingtalk-config.md)
 * [GitHub](docs/github-config.md)
 * [饭碗警告](docs/fwalert-config.md)
+* [消息网关](docs/gateway-config.md)
 
 ## 开发：新增一种规则类型
 
+driver 只负责把动作做出去：规则本体与关联账号由 `handler/runner` 组装成 `model.RuleTask` 后传进来，
+driver 内部不访问数据库、不写日志，需要账号凭据时从 `task.Account` 里解析。
+
 1. 在 `drivers/<name>/` 下实现：
+   * `tool.go`：解析规则 / 账号配置的 `ParseXxx` 函数
    * 规则验证器（实现 `ruleConfigChecker.RuleValidator`，`Meta()` 返回表单元数据）
-   * 执行器（实现 `runner.RuleExecutor`）
+   * 执行器（实现 `runner.RuleExecutor`，方法签名为 `Execute(ctx, *model.RuleTask)`）
+   * 对外动作(底层函数)保持原子：一次调用只做一件事，用 `retry.Do(ctx, ...)` 包裹重试
    * 如需第三方凭据，再实现账号验证器（`accountConfigChecker.AccountValidator`，可选实现 `AccountTester` 支持连通性测试）
-2. 在 `internal/ruleConfigChecker/reg.go`、`internal/accountConfigChecker/reg.go`、`handler/runner/interface.go` 中注册
+2. 在 `internal/ruleConfigChecker/reg.go`、`internal/accountConfigChecker/reg.go`、`handler/runner/reg.go` 中注册
 3. 前端无需改动 —— WebUI 会根据 `Meta()` 返回的字段描述自动渲染配置表单
+
+## 开发：新增一种消息网关
+
+1. 在 `internal/gateway/` 下实现 `Gateway` 接口（`GetType()` / `Meta()` / `Deliver()`），
+   `Deliver` 拿到的 `Task` 里已经包含网关与待触发的规则，实现里不访问数据库
+2. 在 `internal/gateway/reg.go` 中注册
+3. 前端无需改动 —— 新建网关时的类型选项与说明来自 `Meta()`

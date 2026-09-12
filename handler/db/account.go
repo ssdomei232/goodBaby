@@ -1,33 +1,28 @@
 package db
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-// LoadAccountConfig 读取账号并把 Config 字段反序列化到 out。
+// GetAccount 读取一个账号，返回数据库里的原始记录。
 //
-// 各个 driver 之前都各自实现了一遍这段逻辑，其中 github driver 甚至
-// 直接把驱动内的结构体当成 gorm model 查询，这里统一收敛。
-func LoadAccountConfig(accountID uint, out any) error {
+// 规则执行需要的账号凭据由上层(handler/runner)在这里取好再传给 driver，
+// driver 自己不碰数据库。accountID 为 0 表示该规则不需要账号，返回 (nil, nil)。
+func GetAccount(accountID uint) (*model.Account, error) {
 	if accountID == 0 {
-		return fmt.Errorf("该规则没有关联账号")
+		return nil, nil
 	}
 
 	gormDB, err := GetGormDB()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	var account model.Account
 	if err := gormDB.First(&account, accountID).Error; err != nil {
-		return fmt.Errorf("获取账号(ID: %d)失败: %w", accountID, err)
+		return nil, fmt.Errorf("获取账号(ID: %d)失败: %w", accountID, err)
 	}
-
-	if err := json.Unmarshal([]byte(account.Config), out); err != nil {
-		return fmt.Errorf("解析账号(ID: %d)配置失败: %w", accountID, err)
-	}
-	return nil
+	return &account, nil
 }

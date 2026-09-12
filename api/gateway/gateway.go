@@ -1,11 +1,11 @@
+// Package gateway 提供消息网关的 HTTP 接口。
+//
+// 数据库读写都发生在这一层，真正的投递逻辑在 internal/gateway 里，
+// 这里只负责鉴权、取数、组装投递任务。
 package gateway
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -14,155 +14,174 @@ import (
 	"github.com/ssdomei232/goodBaby/api/response"
 	"github.com/ssdomei232/goodBaby/api/user"
 	"github.com/ssdomei232/goodBaby/handler/db"
-	"github.com/ssdomei232/goodBaby/handler/runner"
+	gatewaycore "github.com/ssdomei232/goodBaby/internal/gateway"
 	"github.com/ssdomei232/goodBaby/internal/retry"
 	"github.com/ssdomei232/goodBaby/model"
+	"gorm.io/gorm"
 )
 
+// webhookRequest 外部系统投递消息的请求体
 type webhookRequest struct {
 	Message string `json:"message"`
 	Title   string `json:"title"`
 }
 
-func token() (string, error) {
-	b := make([]byte, 32)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-	return "gw_" + hex.EncodeToString(b), nil
-}
-
+// HandleList 获取当前用户的所有消息网关
 func HandleList(c *gin.Context) {
-	u, err := user.GetUserInfoByGinCtx(c)
+	userInfo, err := user.GetUserInfoByGinCtx(c)
 	if err != nil {
 		response.Unauthorized(c, "未登录")
 		return
 	}
+
 	dbConn, err := db.GetGormDB()
 	if err != nil {
 		response.ServerError(c, "获取网关失败")
 		return
 	}
-	var items []model.MessageGateway
-	if err := dbConn.Where("uid = ?", u.ID).Order("id DESC").Find(&items).Error; err != nil {
+
+	items := []model.MessageGateway{}
+	if err := dbConn.Where("uid = ?", userInfo.ID).Order("id DESC").Find(&items).Error; err != nil {
 		response.ServerError(c, "获取网关失败")
 		return
 	}
 	response.OK(c, items)
 }
 
+// HandleCreate 创建消息网关
 func HandleCreate(c *gin.Context) {
-	u, err := user.GetUserInfoByGinCtx(c)
+	userInfo, err := user.GetUserInfoByGinCtx(c)
 	if err != nil {
 		response.Unauthorized(c, "未登录")
 		return
 	}
+
 	var req model.MessageGatewayRequest
-	if c.ShouldBindJSON(&req) != nil || strings.TrimSpace(req.Name) == "" {
-		response.BadRequest(c, "网关名称和规则不能为空")
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.BadRequest(c, "输入参数错误")
 		return
 	}
-	dbConn, err := db.GetGormDB()
-	if err != nil {
-		response.ServerError(c, "创建网关失败")
+	req.Name = strings.TrimSpace(req.Name)
+	if err := req.Validate(); err != nil {
+		response.FromError(c, err, "创建网关失败")
 		return
 	}
-	key, err := token()
+
+	// 不填类型时用默认网关，填了就必须是已注册的类型
+	if req.Type == "" {
+		req.Type = model.GatewayTypeWebhook
+	}
+	if _, ok := gatewaycore.InitGatewayRegistry().Resolve(req.Type); !ok {
+		response.BadRequest(c, "不支持的消息网关类型: "+req.Type)
+		return
+	}
+
+	token, err := gatewaycore.NewToken()
 	if err != nil {
 		response.ServerError(c, "生成网关 Token 失败")
 		return
 	}
-	item := model.MessageGateway{UID: u.ID, Name: strings.TrimSpace(req.Name), Token: key, CreateAt: time.Now().Unix()}
+
+	dbConn, err := db.GetGormDB()
+	if err != nil {
+		response.ServerError(c, "创建网关失败")
+		return
+	}
+
+	item := model.MessageGateway{
+		UID:      userInfo.ID,
+		Name:     req.Name,
+		Type:     req.Type,
+		Token:    token,
+		CreateAt: time.Now().Unix(),
+	}
 	if err := dbConn.Create(&item).Error; err != nil {
 		response.ServerError(c, "创建网关失败")
 		return
 	}
+
 	response.OK(c, item)
 }
 
+// HandleDelete 删除消息网关，绑定在它下面的规则一并删除
 func HandleDelete(c *gin.Context) {
-	u, err := user.GetUserInfoByGinCtx(c)
+	userInfo, err := user.GetUserInfoByGinCtx(c)
 	if err != nil {
 		response.Unauthorized(c, "未登录")
 		return
 	}
+
+	gatewayID, err := parseID(c.Param("gatewayID"))
+	if err != nil {
+		response.BadRequest(c, "网关 ID 格式错误")
+		return
+	}
+
 	dbConn, err := db.GetGormDB()
 	if err != nil {
 		response.ServerError(c, "删除网关失败")
 		return
 	}
-	if err := dbConn.Where("id = ? AND uid = ?", c.Param("gatewayID"), u.ID).Delete(&model.MessageGateway{}).Error; err != nil {
+
+	err = dbConn.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("gateway_id = ? AND uid = ?", gatewayID, userInfo.ID).
+			Delete(&model.GatewayRule{}).Error; err != nil {
+			return err
+		}
+		return tx.Where("id = ? AND uid = ?", gatewayID, userInfo.ID).
+			Delete(&model.MessageGateway{}).Error
+	})
+	if err != nil {
 		response.ServerError(c, "删除网关失败")
 		return
 	}
+
 	response.OK(c, "网关已删除")
 }
 
+// HandleWebhook 接收外部系统投递的消息，触发绑定在该网关上的规则
 func HandleWebhook(c *gin.Context) {
+	var req webhookRequest
+	if err := c.ShouldBindJSON(&req); err != nil || strings.TrimSpace(req.Message) == "" {
+		response.BadRequest(c, "message 不能为空")
+		return
+	}
+
 	dbConn, err := db.GetGormDB()
 	if err != nil {
 		response.ServerError(c, "网关不可用")
 		return
 	}
-	var gw model.MessageGateway
-	if err := dbConn.Where("token = ?", c.Param("token")).First(&gw).Error; err != nil {
+
+	var target model.MessageGateway
+	if err := dbConn.Where("token = ?", c.Param("token")).First(&target).Error; err != nil {
 		response.Fail(c, http.StatusNotFound, "网关不存在")
 		return
 	}
-	var req webhookRequest
-	if c.ShouldBindJSON(&req) != nil || strings.TrimSpace(req.Message) == "" {
-		response.BadRequest(c, "message 不能为空")
-		return
-	}
-	var rules []model.Rule
-	if err := dbConn.Where("uid = ? AND gateway_id = ? AND enabled = ?", gw.UID, gw.ID, true).Find(&rules).Error; err != nil {
+
+	rules := []model.GatewayRule{}
+	if err := dbConn.Where("uid = ? AND gateway_id = ? AND enabled = ?", target.UID, target.ID, true).
+		Find(&rules).Error; err != nil {
 		response.ServerError(c, "读取网关规则失败")
 		return
 	}
+
+	// 投递需要在 HTTP 请求内返回结果，因此用较短的超时
 	ctx, cancel := context.WithTimeout(context.Background(), retry.TestTimeout)
 	defer cancel()
-	fails := make([]string, 0)
-	for i := range rules {
-		rule := rules[i]
-		cfg, err := overrideMessage(rule.ConfigJson, req.Title, req.Message)
-		if err != nil {
-			fails = append(fails, rule.Name+": 规则不支持消息网关")
-			continue
-		}
-		rule.ConfigJson = cfg
-		if err := runner.ExecuteRuleWithContext(ctx, &rule, "webhook"); err != nil {
-			fails = append(fails, rule.Name+": "+err.Error())
-		}
-	}
-	response.OK(c, gin.H{"total": len(rules), "failed": fails})
-}
 
-func overrideMessage(raw, title, message string) (string, error) {
-	var obj map[string]any
-	if err := json.Unmarshal([]byte(raw), &obj); err != nil {
-		return raw, err
+	result, err := gatewaycore.InitGatewayRegistry().Deliver(ctx, target.Type, &gatewaycore.Task{
+		Gateway: &target,
+		Rules:   rules,
+		Message: gatewaycore.Message{
+			Title:   strings.TrimSpace(req.Title),
+			Content: strings.TrimSpace(req.Message),
+		},
+	})
+	if err != nil {
+		response.ServerError(c, err.Error())
+		return
 	}
-	matched := false
-	if _, ok := obj["msg"]; ok {
-		obj["msg"] = message
-		matched = true
-	}
-	if _, ok := obj["message"]; ok {
-		obj["message"] = message
-		matched = true
-	}
-	if _, ok := obj["body"]; ok {
-		obj["body"] = message
-		matched = true
-	}
-	if !matched {
-		return raw, fmt.Errorf("message field not found")
-	}
-	if title != "" {
-		if _, ok := obj["title"]; ok {
-			obj["title"] = title
-		}
-	}
-	b, err := json.Marshal(obj)
-	return string(b), err
+
+	response.OK(c, result)
 }

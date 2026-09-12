@@ -1,7 +1,6 @@
 package onebot
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/ssdomei232/goodBaby/internal/meta"
@@ -15,9 +14,9 @@ func (v *OneBotRuleValidator) GetType() string {
 }
 
 func (v *OneBotRuleValidator) Validate(configJSON string) error {
-	var config OneBotConfig
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return fmt.Errorf("解析OneBot规则配置失败: %v", err)
+	config, err := ParseRuleConfig(configJSON)
+	if err != nil {
+		return err
 	}
 
 	if config.Msg == "" {
@@ -44,7 +43,7 @@ func (v *OneBotRuleValidator) Meta() meta.RuleMeta {
 		Description: "触发时通过 OneBot 向指定的群或好友发送消息。",
 		AccountType: AccountType,
 		Fields: []meta.Field{
-			{Key: "msg", Label: "消息内容", Type: meta.FieldTextarea, Required: true},
+			{Key: "msg", Label: "消息内容", Type: meta.FieldTextarea, Required: true, GatewayMessage: true},
 			{Key: "send_groups", Label: "群号", Type: meta.FieldNumberList, Placeholder: "123456789"},
 			{Key: "send_users", Label: "好友 QQ 号", Type: meta.FieldNumberList, Placeholder: "123456789"},
 		},

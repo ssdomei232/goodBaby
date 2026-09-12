@@ -1,7 +1,6 @@
 package github
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -15,9 +14,9 @@ func (v *GithubMakeRepositoryPublicRuleValidator) GetType() string {
 }
 
 func (v *GithubMakeRepositoryPublicRuleValidator) Validate(configJSON string) error {
-	var config GithubReposConfig
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return fmt.Errorf("解析 GitHub 规则配置失败: %v", err)
+	config, err := ParseReposConfig(configJSON)
+	if err != nil {
+		return err
 	}
 
 	if len(config.Repos) == 0 {

@@ -5,28 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ssdomei232/goodBaby/handler/db"
-	"github.com/ssdomei232/goodBaby/internal/retry"
-	"github.com/ssdomei232/goodBaby/model"
 	"github.com/wneessen/go-mail"
 )
 
-// GetEmailAccountFromRule 从 Rule 中获取 EmailAccount 配置
-func GetEmailAccountFromRule(rule *model.Rule) (*EmailAccountConfig, error) {
-	var emailAccountConfig EmailAccountConfig
-	if err := db.LoadAccountConfig(rule.AccountID, &emailAccountConfig); err != nil {
-		return nil, err
+// ParseAccountConfig 解析邮箱账号配置
+func ParseAccountConfig(config string) (*EmailAccountConfig, error) {
+	if config == "" {
+		return nil, fmt.Errorf("解析邮箱账号配置失败: 规则没有关联账号")
 	}
-	return &emailAccountConfig, nil
+
+	var account EmailAccountConfig
+	if err := json.Unmarshal([]byte(config), &account); err != nil {
+		return nil, fmt.Errorf("解析邮箱账号配置失败: %v", err)
+	}
+	return &account, nil
 }
 
-// GetEmailRuleFromRule 从 Rule 中获取 EmailRule 配置
-func GetEmailRuleFromRule(rule *model.Rule) (*EmailRule, error) {
-	var emailRule EmailRule
-	if err := json.Unmarshal([]byte(rule.ConfigJson), &emailRule); err != nil {
-		return nil, err
+// ParseRuleConfig 解析邮件规则配置
+func ParseRuleConfig(configJSON string) (*EmailRule, error) {
+	var config EmailRule
+	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
+		return nil, fmt.Errorf("解析邮件规则配置失败: %v", err)
 	}
-	return &emailRule, nil
+	return &config, nil
 }
 
 // newSMTPClient 按账号配置里的加密方式创建 SMTP 客户端
@@ -54,6 +55,7 @@ func newSMTPClient(cfg *EmailAccountConfig) (*mail.Client, error) {
 	return client, nil
 }
 
+// buildMessage 组装一封邮件
 func buildMessage(cfg *EmailAccountConfig, address, title, body string) (*mail.Msg, error) {
 	message := mail.NewMsg()
 	if err := message.From(cfg.FromOrDefault()); err != nil {
@@ -67,19 +69,14 @@ func buildMessage(cfg *EmailAccountConfig, address, title, body string) (*mail.M
 	return message, nil
 }
 
-func sendMailMsgWithRetry(ctx context.Context, cfg *EmailAccountConfig, rule *EmailRule, address string) error {
-	return retry.Do(ctx, func() error {
-		return sendMailMsg(ctx, cfg, rule, address)
-	})
-}
-
-func sendMailMsg(ctx context.Context, cfg *EmailAccountConfig, rule *EmailRule, address string) error {
+// sendMail 给一个地址发送一封邮件
+func sendMail(ctx context.Context, cfg *EmailAccountConfig, config *EmailRule, address string) error {
 	client, err := newSMTPClient(cfg)
 	if err != nil {
 		return err
 	}
 
-	message, err := buildMessage(cfg, address, rule.Title, rule.Msg)
+	message, err := buildMessage(cfg, address, config.Title, config.Msg)
 	if err != nil {
 		return err
 	}

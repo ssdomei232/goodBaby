@@ -2,7 +2,6 @@ package github
 
 import (
 	"context"
-	"log"
 
 	"github.com/ssdomei232/goodBaby/model"
 )
@@ -14,8 +13,16 @@ func (e *GithubMakeRepoPublicExecutor) GetType() string {
 	return RuleTypeMakeRepoPublic
 }
 
-func (e *GithubMakeRepoPublicExecutor) Execute(ctx context.Context, rule *model.Rule) error {
-	log.Printf("执行GitHub仓库公开规则: %s (ID: %d)", rule.Name, rule.ID)
+func (e *GithubMakeRepoPublicExecutor) Execute(ctx context.Context, task *model.RuleTask) error {
+	account, err := ParseAccountConfig(task.AccountConfig())
+	if err != nil {
+		return err
+	}
 
-	return MakeRepositoryPublic(ctx, rule)
+	config, err := ParseReposConfig(task.Rule.ConfigJson)
+	if err != nil {
+		return err
+	}
+
+	return MakeRepositoryPublic(ctx, account, config)
 }

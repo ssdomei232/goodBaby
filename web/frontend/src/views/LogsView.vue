@@ -21,6 +21,7 @@ const triggerLabels: Record<string, string> = {
   timer: '定时触发',
   manual: '手动测试',
   remind: '提醒',
+  gateway: '网关投递',
 }
 
 async function refresh() {

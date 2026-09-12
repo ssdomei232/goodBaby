@@ -106,6 +106,15 @@ func main() {
 			rules.DELETE("/:ruleID", rule.HandleDeleteRule)
 		}
 
+		gatewayRules := authorized.Group("/gateway-rules")
+		{
+			gatewayRules.GET("/", rule.HandleGetAllGatewayRules)
+			gatewayRules.POST("/", rule.HandleCreateGatewayRule)
+			gatewayRules.PUT("/:ruleID", rule.HandleEditGatewayRule)
+			gatewayRules.POST("/:ruleID/test", rule.HandleTestGatewayRule)
+			gatewayRules.DELETE("/:ruleID", rule.HandleDeleteGatewayRule)
+		}
+
 		accounts := authorized.Group("/accounts")
 		{
 			accounts.GET("/", account.HandleGetAllAccounts)

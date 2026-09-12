@@ -9,10 +9,13 @@ import (
 	"github.com/ssdomei232/goodBaby/model"
 )
 
-// RuleExecutor 规则执行器接口
+// RuleExecutor 规则执行器接口。
+//
+// 执行一条规则需要的一切(规则本体、账号凭据)都由上层组装成 model.RuleTask，
+// driver 只负责把动作做出去：不查数据库、不写日志，因此每个实现都能单独测试。
 type RuleExecutor interface {
 	// Execute 执行规则，ctx 决定了重试的最长时间
-	Execute(ctx context.Context, rule *model.Rule) error
+	Execute(ctx context.Context, task *model.RuleTask) error
 	// GetType 获取执行器支持的规则类型
 	GetType() string
 }
@@ -35,13 +38,13 @@ func (er *ExecutorRegistry) Register(executor RuleExecutor) {
 }
 
 // Execute 根据规则类型执行规则
-func (er *ExecutorRegistry) Execute(ctx context.Context, rule *model.Rule) error {
-	executor, exists := er.executors[rule.Type]
+func (er *ExecutorRegistry) Execute(ctx context.Context, task *model.RuleTask) error {
+	executor, exists := er.executors[task.Rule.Type]
 	if !exists {
-		return fmt.Errorf("不支持的规则类型: %s", rule.Type)
+		return fmt.Errorf("不支持的规则类型: %s", task.Rule.Type)
 	}
 
-	return executor.Execute(ctx, rule)
+	return executor.Execute(ctx, task)
 }
 
 // GetSupportedTypes 获取所有支持的规则类型

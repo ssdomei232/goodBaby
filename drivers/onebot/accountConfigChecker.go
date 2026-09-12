@@ -1,7 +1,6 @@
 package onebot
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/url"
 	"strings"
@@ -17,7 +16,7 @@ func (v *OneBotAccountConfigValidator) GetType() string {
 }
 
 func (v *OneBotAccountConfigValidator) Validate(config string) error {
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -39,7 +38,7 @@ func (v *OneBotAccountConfigValidator) Validate(config string) error {
 
 // Test 调用 get_login_info 验证地址与 Token
 func (v *OneBotAccountConfigValidator) Test(config string) error {
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -61,12 +60,4 @@ func (v *OneBotAccountConfigValidator) Meta() meta.AccountMeta {
 			{Key: "token", Label: "Access Token", Type: meta.FieldPassword, Required: true, Secret: true},
 		},
 	}
-}
-
-func parseAccount(config string) (*OneBotAccount, error) {
-	var cfg OneBotAccount
-	if err := json.Unmarshal([]byte(config), &cfg); err != nil {
-		return nil, fmt.Errorf("解析OneBot账号配置失败: %v", err)
-	}
-	return &cfg, nil
 }

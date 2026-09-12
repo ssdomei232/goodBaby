@@ -8,6 +8,7 @@ import {
   Operation,
   User,
   Connection,
+  Promotion,
   Document,
   Setting,
   SwitchButton,
@@ -40,6 +41,7 @@ const menus = [
   { path: '/rules', title: '规则', icon: Operation },
   { path: '/accounts', title: '账号', icon: User },
   { path: '/gateways', title: '消息网关', icon: Connection },
+  { path: '/gateway-rules', title: '网关规则', icon: Promotion },
   { path: '/logs', title: '执行日志', icon: Document },
   { path: '/settings', title: '设置', icon: Setting },
 ]

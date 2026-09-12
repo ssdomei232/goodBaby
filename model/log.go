@@ -2,9 +2,10 @@ package model
 
 // 执行日志的触发来源
 const (
-	TriggerTimer  = "timer"  // Timer 到期自动触发
-	TriggerManual = "manual" // 用户在 WebUI 手动测试
-	TriggerRemind = "remind" // 提醒通知
+	TriggerTimer   = "timer"   // Timer 到期自动触发
+	TriggerManual  = "manual"  // 用户在 WebUI 手动测试
+	TriggerRemind  = "remind"  // 提醒通知
+	TriggerGateway = "gateway" // 外部系统投递到消息网关触发
 )
 
 // ExecutionLog 记录每一次规则执行/提醒的结果，供 WebUI 展示
@@ -15,8 +16,11 @@ type ExecutionLog struct {
 	RuleName string `json:"rule_name"`
 	RuleType string `json:"rule_type"`
 	TimerID  uint   `json:"timer_id"`
-	Trigger  string `json:"trigger"`
-	Success  bool   `json:"success"`
-	Message  string `json:"message"`
-	CreateAt int64  `gorm:"index" json:"create_at"`
+	// GatewayID / GatewayRuleID 只有消息网关投递触发时才有值
+	GatewayID     uint   `json:"gateway_id"`
+	GatewayRuleID uint   `json:"gateway_rule_id"`
+	Trigger       string `json:"trigger"`
+	Success       bool   `json:"success"`
+	Message       string `json:"message"`
+	CreateAt      int64  `gorm:"index" json:"create_at"`
 }

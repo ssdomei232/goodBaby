@@ -1,7 +1,6 @@
 package email
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/mail"
 
@@ -16,9 +15,9 @@ func (v *EmailRuleValidator) GetType() string {
 }
 
 func (v *EmailRuleValidator) Validate(configJSON string) error {
-	var config EmailRule
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return fmt.Errorf("解析邮件规则配置失败: %v", err)
+	config, err := ParseRuleConfig(configJSON)
+	if err != nil {
+		return err
 	}
 
 	if config.Title == "" {
@@ -51,8 +50,8 @@ func (v *EmailRuleValidator) Meta() meta.RuleMeta {
 		Docs:        "docs/email-config.md",
 		AccountType: AccountType,
 		Fields: []meta.Field{
-			{Key: "title", Label: "邮件标题", Type: meta.FieldString, Required: true},
-			{Key: "msg", Label: "邮件正文", Type: meta.FieldTextarea, Required: true},
+			{Key: "title", Label: "邮件标题", Type: meta.FieldString, Required: true, GatewayMessage: true},
+			{Key: "msg", Label: "邮件正文", Type: meta.FieldTextarea, Required: true, GatewayMessage: true},
 			{Key: "destinations", Label: "收件人", Type: meta.FieldStringList, Required: true, Placeholder: "someone@example.com"},
 		},
 	}

@@ -31,6 +31,16 @@ func Do(ctx context.Context, op func() error) error {
 	return err
 }
 
+// Permanent 标记一个重试没有意义的错误(例如凭据无效、配置错误)
+//
+// driver 里凡是重试也救不回来的失败都包一层，避免白白退避几个小时。
+func Permanent(err error) error {
+	if err == nil {
+		return nil
+	}
+	return backoff.Permanent(err)
+}
+
 // ExecutionTimeout 返回配置中的规则执行超时时间
 func ExecutionTimeout() time.Duration {
 	config, err := configs.GetConfig()

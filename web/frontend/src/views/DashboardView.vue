@@ -8,6 +8,7 @@ import {
   Timer as TimerIcon,
   Operation,
   User,
+  Connection,
   Warning,
 } from '@element-plus/icons-vue'
 import { dashboardApi, timerApi } from '@/api'
@@ -73,12 +74,21 @@ const stats = computed(() => [
   },
   {
     label: '规则',
-    sub: '触发时执行的动作',
+    sub: `定时器规则 ${overview.value?.rule_count ?? 0} 条`,
     value: overview.value?.rule_count,
     icon: Operation,
     color: '#6366f1',
     bg: 'rgb(99 102 241 / 0.12)',
     to: '/rules',
+  },
+  {
+    label: '消息网关',
+    sub: `网关规则 ${overview.value?.gateway_rule_count ?? 0} 条`,
+    value: overview.value?.gateway_count,
+    icon: Connection,
+    color: '#0ea5e9',
+    bg: 'rgb(14 165 233 / 0.12)',
+    to: '/gateways',
   },
   {
     label: '账号',

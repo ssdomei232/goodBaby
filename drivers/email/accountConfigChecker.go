@@ -2,7 +2,6 @@ package email
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/mail"
 
@@ -18,7 +17,7 @@ func (v *EmailAccountConfigValidator) GetType() string {
 }
 
 func (v *EmailAccountConfigValidator) Validate(config string) error {
-	cfg, err := parseAccountConfig(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -56,7 +55,7 @@ func (v *EmailAccountConfigValidator) Validate(config string) error {
 
 // Test 连接 SMTP 服务器并完成认证；填写了测试收件地址时会真的发一封测试邮件
 func (v *EmailAccountConfigValidator) Test(config string) error {
-	cfg, err := parseAccountConfig(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -102,12 +101,4 @@ func (v *EmailAccountConfigValidator) Meta() meta.AccountMeta {
 			{Key: "test_destination", Label: "测试收件地址", Type: meta.FieldString, Help: "填写后点击“测试”会真的发送一封测试邮件"},
 		},
 	}
-}
-
-func parseAccountConfig(config string) (*EmailAccountConfig, error) {
-	var cfg EmailAccountConfig
-	if err := json.Unmarshal([]byte(config), &cfg); err != nil {
-		return nil, fmt.Errorf("解析邮箱账号配置失败: %v", err)
-	}
-	return &cfg, nil
 }

@@ -2,9 +2,7 @@ package dingtalk
 
 import (
 	"context"
-	"log"
 
-	"github.com/ssdomei232/goodBaby/internal/retry"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
@@ -15,15 +13,12 @@ func (e *DingTalkExecutor) GetType() string {
 	return RuleType
 }
 
-func (e *DingTalkExecutor) Execute(ctx context.Context, rule *model.Rule) error {
-	log.Printf("执行钉钉规则: %s (ID: %d)", rule.Name, rule.ID)
-
-	config, err := ParseRuleConfig(rule.ConfigJson)
+func (e *DingTalkExecutor) Execute(ctx context.Context, task *model.RuleTask) error {
+	// 钉钉机器人凭据直接写在规则配置里，不需要关联账号
+	config, err := ParseRuleConfig(task.Rule.ConfigJson)
 	if err != nil {
 		return err
 	}
 
-	return retry.Do(ctx, func() error {
-		return send(&config.DingTalkConfig, config.Title, config.Msg)
-	})
+	return SendMessage(ctx, config)
 }

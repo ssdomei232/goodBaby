@@ -1,7 +1,6 @@
 package rainyun
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/ssdomei232/goodBaby/internal/meta"
@@ -16,7 +15,7 @@ func (v *RainyunAccountConfigValidator) GetType() string { return AccountType }
 
 func (v *RainyunAccountConfigValidator) Validate(config string) error {
 	// 解析配置
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -28,16 +27,8 @@ func (v *RainyunAccountConfigValidator) Validate(config string) error {
 	return nil
 }
 
-func parseAccount(config string) (*RainyunAccount, error) {
-	var cfg RainyunAccount
-	if err := json.Unmarshal([]byte(config), &cfg); err != nil {
-		return nil, fmt.Errorf("解析雨云账号配置失败: %v", err)
-	}
-	return &cfg, nil
-}
-
 func (v *RainyunAccountConfigValidator) Test(config string) error {
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}

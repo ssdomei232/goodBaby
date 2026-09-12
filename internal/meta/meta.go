@@ -26,8 +26,11 @@ type Field struct {
 	Placeholder string    `json:"placeholder,omitempty"`
 	Help        string    `json:"help,omitempty"`
 	// Secret 为 true 的字段在读取接口中会被掩码
-	Secret  bool `json:"secret,omitempty"`
-	Default any  `json:"default,omitempty"`
+	Secret bool `json:"secret,omitempty"`
+	// GatewayMessage 为 true 的字段由消息网关投递的内容提供(msg / title 之类)：
+	// 在「网关规则」页面不需要用户填写，投递时会被请求里的 message / title 替换
+	GatewayMessage bool `json:"gateway_message,omitempty"`
+	Default        any  `json:"default,omitempty"`
 }
 
 // AccountMeta 账号类型的元数据
@@ -49,6 +52,16 @@ type RuleMeta struct {
 	// AccountType 该规则需要的账号类型，为空表示不需要关联账号
 	AccountType string  `json:"account_type"`
 	Fields      []Field `json:"fields"`
+}
+
+// GatewayMeta 消息网关类型的元数据
+type GatewayMeta struct {
+	Type        string `json:"type"`
+	Label       string `json:"label"`
+	Description string `json:"description,omitempty"`
+	Docs        string `json:"docs,omitempty"`
+	// PayloadHint WebUI 上展示的请求体示例
+	PayloadHint string `json:"payload_hint,omitempty"`
 }
 
 // SecretKeys 返回需要掩码的字段名

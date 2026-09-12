@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import { providerApi } from '@/api'
-import type { AccountMeta, Providers, RuleMeta } from '@/api/types'
+import type { AccountMeta, GatewayMeta, Providers, RuleMeta } from '@/api/types'
 
 /** 驱动元数据：账号/规则类型的表单描述，登录后拉取一次全局共享 */
 export const useMetaStore = defineStore('meta', () => {
@@ -16,6 +16,7 @@ export const useMetaStore = defineStore('meta', () => {
 
   const accountMetas = computed<AccountMeta[]>(() => providers.value?.accounts ?? [])
   const ruleMetas = computed<RuleMeta[]>(() => providers.value?.rules ?? [])
+  const gatewayMetas = computed<GatewayMeta[]>(() => providers.value?.gateways ?? [])
 
   function accountMeta(type: string): AccountMeta | undefined {
     return accountMetas.value.find((m) => m.type === type)
@@ -33,14 +34,25 @@ export const useMetaStore = defineStore('meta', () => {
     return ruleMeta(type)?.label ?? type
   }
 
+  function gatewayMeta(type: string): GatewayMeta | undefined {
+    return gatewayMetas.value.find((m) => m.type === type)
+  }
+
+  function gatewayLabel(type: string): string {
+    return gatewayMeta(type)?.label ?? type
+  }
+
   return {
     providers,
     accountMetas,
     ruleMetas,
+    gatewayMetas,
     ensureLoaded,
     accountMeta,
     ruleMeta,
+    gatewayMeta,
     accountLabel,
     ruleLabel,
+    gatewayLabel,
   }
 })

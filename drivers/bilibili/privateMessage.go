@@ -2,54 +2,34 @@ package bilibili
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/CuteReimu/bilibili/v2"
 	"github.com/ssdomei232/goodBaby/internal/retry"
-	"github.com/ssdomei232/goodBaby/model"
 )
 
-// 私信消息类型：1 为文字
+// privateMsgTypeText 私信消息类型：1 为文字
 const privateMsgTypeText = 1
 
-// SendBiliPrivateMessage 向配置中的每个 UID 发送一条 B 站私信
-func SendBiliPrivateMessage(ctx context.Context, rule *model.Rule) error {
-	client, err := getBiliClient(rule)
-	if err != nil {
-		return fmt.Errorf("获取B站客户端失败: %w", err)
-	}
+// SendPrivateMessage 用给定账号向配置中的每个 UID 发送一条 B 站私信
+//
+// 每个接收者单独重试、互不阻塞，最后汇总失败信息交给上层记录。
+func SendPrivateMessage(ctx context.Context, account *BiliAccount, config *BiliPrivateMessageConfig) error {
+	client := newClient(account.RawCookies)
 
-	config, err := getPrivateMessageConfig(rule)
+	// 发私信需要带上自己的 UID，从账号信息里取
+	selfUID, err := fetchSelfUID(ctx, client)
 	if err != nil {
 		return err
 	}
 
-	// 发私信需要带上自己的 UID，从账号信息里取
-	account, err := client.GetAccountInformation()
-	if err != nil {
-		return fmt.Errorf("获取B站账号信息失败(cookie 可能已失效): %w", err)
-	}
-	if account == nil || account.Mid == 0 {
-		return fmt.Errorf("B站 cookie 无效或已过期")
-	}
-
 	var fails []string
 	for _, uid := range config.ReceiverUids {
-		err := retry.Do(ctx, func() error {
-			_, err := client.SendPrivateMessage(bilibili.SendPrivateMessageParam{
-				SenderUid:    account.Mid,
-				ReceiverId:   int(uid),
-				ReceiverType: 1,
-				MsgType:      privateMsgTypeText,
-				Timestamp:    int(time.Now().Unix()),
-				Content:      buildTextContent(config.Msg),
-			})
-			return err
-		})
-		if err != nil {
+		if err := retry.Do(ctx, func() error {
+			return sendPrivateMessage(client, selfUID, uid, config.Msg)
+		}); err != nil {
 			fails = append(fails, fmt.Sprintf("UID %d: %v", uid, err))
 		}
 	}
@@ -61,20 +41,34 @@ func SendBiliPrivateMessage(ctx context.Context, rule *model.Rule) error {
 	return nil
 }
 
-// buildTextContent 文字私信的 content 是一个 JSON 字符串 {"content":"..."}
-func buildTextContent(msg string) string {
-	payload, err := json.Marshal(map[string]string{"content": msg})
-	if err != nil {
-		// msg 是普通字符串，序列化不会失败；兜底也返回合法 JSON
-		return `{"content":""}`
+// fetchSelfUID 取当前账号的 UID，私信接口需要它
+func fetchSelfUID(ctx context.Context, client *bilibili.Client) (int, error) {
+	var selfUID int
+	if err := retry.Do(ctx, func() error {
+		info, err := client.GetAccountInformation()
+		if err != nil {
+			return err
+		}
+		if info == nil || info.Mid == 0 {
+			return retry.Permanent(fmt.Errorf("B站 cookie 无效或已过期"))
+		}
+		selfUID = info.Mid
+		return nil
+	}); err != nil {
+		return 0, fmt.Errorf("获取B站账号信息失败: %w", err)
 	}
-	return string(payload)
+	return selfUID, nil
 }
 
-func getPrivateMessageConfig(rule *model.Rule) (*BiliPrivateMessageConfig, error) {
-	var config BiliPrivateMessageConfig
-	if err := json.Unmarshal([]byte(rule.ConfigJson), &config); err != nil {
-		return nil, fmt.Errorf("解析B站私信规则配置失败: %w", err)
-	}
-	return &config, nil
+// sendPrivateMessage 发送一条私信
+func sendPrivateMessage(client *bilibili.Client, senderUID int, receiverUID int64, msg string) error {
+	_, err := client.SendPrivateMessage(bilibili.SendPrivateMessageParam{
+		SenderUid:    senderUID,
+		ReceiverId:   int(receiverUID),
+		ReceiverType: 1,
+		MsgType:      privateMsgTypeText,
+		Timestamp:    int(time.Now().Unix()),
+		Content:      buildTextContent(msg),
+	})
+	return err
 }

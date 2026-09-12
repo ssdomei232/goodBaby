@@ -1,7 +1,6 @@
 package dingtalk
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/ssdomei232/goodBaby/internal/meta"
@@ -42,17 +41,8 @@ func (v *DingTalkRuleValidator) Meta() meta.RuleMeta {
 		Fields: []meta.Field{
 			{Key: "access_token", Label: "Access Token", Type: meta.FieldPassword, Required: true, Secret: true, Help: "机器人 Webhook 中 access_token 参数的值"},
 			{Key: "secret", Label: "加签 Secret", Type: meta.FieldPassword, Secret: true, Help: "机器人安全设置选择“加签”时填写"},
-			{Key: "title", Label: "消息标题", Type: meta.FieldString, Required: true},
-			{Key: "msg", Label: "消息内容", Type: meta.FieldTextarea, Required: true, Help: "支持 Markdown"},
+			{Key: "title", Label: "消息标题", Type: meta.FieldString, Required: true, GatewayMessage: true},
+			{Key: "msg", Label: "消息内容", Type: meta.FieldTextarea, Required: true, GatewayMessage: true, Help: "支持 Markdown"},
 		},
 	}
-}
-
-// ParseRuleConfig 解析钉钉规则配置
-func ParseRuleConfig(configJSON string) (*DingTalkRuleConfig, error) {
-	var config DingTalkRuleConfig
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return nil, fmt.Errorf("解析钉钉规则配置失败: %v", err)
-	}
-	return &config, nil
 }

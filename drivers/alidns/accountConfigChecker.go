@@ -1,7 +1,6 @@
 package alidns
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/alibabacloud-go/alidns-20150109/v5/client"
@@ -13,7 +12,7 @@ type AliDNSAccountConfigValidator struct{}
 func (v *AliDNSAccountConfigValidator) GetType() string { return AccountType }
 
 func (v *AliDNSAccountConfigValidator) Validate(config string) error {
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -23,21 +22,13 @@ func (v *AliDNSAccountConfigValidator) Validate(config string) error {
 	return nil
 }
 
-func parseAccount(config string) (*AliDNSAccount, error) {
-	var cfg AliDNSAccount
-	if err := json.Unmarshal([]byte(config), &cfg); err != nil {
-		return nil, fmt.Errorf("解析阿里云账号配置失败: %v", err)
-	}
-	return &cfg, nil
-}
-
 func (v *AliDNSAccountConfigValidator) Test(config string) error {
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
 
-	aliDNSClient, err := getAliDNSClient(cfg.AK, cfg.SK)
+	aliDNSClient, err := newClient(cfg.AK, cfg.SK)
 	if err != nil {
 		return err
 	}

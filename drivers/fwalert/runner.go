@@ -2,9 +2,7 @@ package fwalert
 
 import (
 	"context"
-	"log"
 
-	"github.com/ssdomei232/goodBaby/internal/retry"
 	"github.com/ssdomei232/goodBaby/model"
 )
 
@@ -12,18 +10,15 @@ import (
 type FwalertExecutor struct{}
 
 func (e *FwalertExecutor) GetType() string {
-	return RuleTypeFwalert
+	return RuleType
 }
 
-func (e *FwalertExecutor) Execute(ctx context.Context, rule *model.Rule) error {
-	log.Printf("执行饭碗警告规则: %s (ID: %d)", rule.Name, rule.ID)
-
-	config, err := ParseRuleConfig(rule.ConfigJson)
+func (e *FwalertExecutor) Execute(ctx context.Context, task *model.RuleTask) error {
+	// 饭碗警告的凭据就是 Webhook 地址，直接写在规则配置里
+	config, err := ParseRuleConfig(task.Rule.ConfigJson)
 	if err != nil {
 		return err
 	}
 
-	return retry.Do(ctx, func() error {
-		return send(config)
-	})
+	return Send(ctx, config)
 }

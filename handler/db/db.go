@@ -43,6 +43,9 @@ func MustInit() *gorm.DB {
 	if err := ensureAdmin(gormDB); err != nil {
 		log.Fatalf("初始化管理员失败: %v", err)
 	}
+	if err := migrateGatewayRules(gormDB); err != nil {
+		log.Fatalf("迁移消息网关规则失败: %v", err)
+	}
 	return gormDB
 }
 
@@ -136,6 +139,7 @@ func AutoMigrate(gormDB *gorm.DB) error {
 		&model.User{},
 		&model.Timer{},
 		&model.Rule{},
+		&model.GatewayRule{},
 		&model.Account{},
 		&model.ExecutionLog{},
 		&model.MessageGateway{},

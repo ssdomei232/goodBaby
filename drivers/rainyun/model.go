@@ -8,6 +8,12 @@ const (
 	RuleTypeRunAway   = "rainyun-runaway"
 )
 
+// pageSize 拉取云服务器列表时每页的条数
+const pageSize = 20
+
+// runAwayConfirmText 跑路规则要求用户输入的免责声明
+const runAwayConfirmText = "我已知晓"
+
 type RainyunWorkOrderRule struct {
 	Title string `json:"title"`
 	Msg   string `json:"msg"`

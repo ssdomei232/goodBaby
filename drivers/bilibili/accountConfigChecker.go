@@ -1,7 +1,6 @@
 package bilibili
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/ssdomei232/goodBaby/internal/meta"
@@ -15,7 +14,7 @@ func (v *BilibiliAccountConfigValidator) GetType() string {
 }
 
 func (v *BilibiliAccountConfigValidator) Validate(config string) error {
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -29,7 +28,7 @@ func (v *BilibiliAccountConfigValidator) Validate(config string) error {
 
 // Test 用 cookie 拉一次账号信息，验证 cookie 是否还有效
 func (v *BilibiliAccountConfigValidator) Test(config string) error {
-	cfg, err := parseAccount(config)
+	cfg, err := ParseAccountConfig(config)
 	if err != nil {
 		return err
 	}
@@ -63,12 +62,4 @@ func (v *BilibiliAccountConfigValidator) Meta() meta.AccountMeta {
 			},
 		},
 	}
-}
-
-func parseAccount(config string) (*BiliAccount, error) {
-	var cfg BiliAccount
-	if err := json.Unmarshal([]byte(config), &cfg); err != nil {
-		return nil, fmt.Errorf("解析B站账号配置失败: %v", err)
-	}
-	return &cfg, nil
 }

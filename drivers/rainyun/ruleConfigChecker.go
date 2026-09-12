@@ -1,7 +1,6 @@
 package rainyun
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/ssdomei232/goodBaby/internal/meta"
@@ -15,9 +14,9 @@ func (v *RainyunWorkorderRuleValidator) GetType() string {
 }
 
 func (v *RainyunWorkorderRuleValidator) Validate(configJSON string) error {
-	var config RainyunWorkOrderRule
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return fmt.Errorf("解析雨云规则配置失败: %v", err)
+	config, err := ParseWorkOrderConfig(configJSON)
+	if err != nil {
+		return err
 	}
 
 	if config.Title == "" {
@@ -51,12 +50,12 @@ func (v *RainyunRunAwayRuleValidator) GetType() string {
 }
 
 func (v *RainyunRunAwayRuleValidator) Validate(configJSON string) error {
-	var config RainyunRunAwayRule
-	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
-		return fmt.Errorf("解析雨云规则配置失败: %v", err)
+	config, err := ParseRunAwayConfig(configJSON)
+	if err != nil {
+		return err
 	}
 
-	if config.IK != "我已知晓" {
+	if config.IK != runAwayConfirmText {
 		return fmt.Errorf("请输入正确内容")
 	}
 

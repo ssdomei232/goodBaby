@@ -42,6 +42,12 @@ const router = createRouter({
         },
         { path: 'gateways', name: 'gateways', component: () => import('@/views/GatewaysView.vue'), meta: { title: '消息网关' } },
         {
+          path: 'gateway-rules',
+          name: 'gateway-rules',
+          component: () => import('@/views/GatewayRulesView.vue'),
+          meta: { title: '网关规则' },
+        },
+        {
           path: 'logs',
           name: 'logs',
           component: () => import('@/views/LogsView.vue'),

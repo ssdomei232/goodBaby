@@ -2,7 +2,6 @@ package bilibili
 
 import (
 	"context"
-	"log"
 
 	"github.com/ssdomei232/goodBaby/model"
 )
@@ -14,10 +13,18 @@ func (e *BilibiliDynamicExecutor) GetType() string {
 	return RuleTypeDynamic
 }
 
-func (e *BilibiliDynamicExecutor) Execute(ctx context.Context, rule *model.Rule) error {
-	log.Printf("执行B站动态规则: %s (ID: %d)", rule.Name, rule.ID)
+func (e *BilibiliDynamicExecutor) Execute(ctx context.Context, task *model.RuleTask) error {
+	account, err := ParseAccountConfig(task.AccountConfig())
+	if err != nil {
+		return err
+	}
 
-	return SendBiliDynamicMsg(ctx, rule)
+	config, err := ParseDynamicConfig(task.Rule.ConfigJson)
+	if err != nil {
+		return err
+	}
+
+	return SendDynamic(ctx, account, config)
 }
 
 // BilibiliPrivateMessageExecutor B站私信执行器
@@ -27,8 +34,16 @@ func (e *BilibiliPrivateMessageExecutor) GetType() string {
 	return RuleTypePrivateMessage
 }
 
-func (e *BilibiliPrivateMessageExecutor) Execute(ctx context.Context, rule *model.Rule) error {
-	log.Printf("执行B站私信规则: %s (ID: %d)", rule.Name, rule.ID)
+func (e *BilibiliPrivateMessageExecutor) Execute(ctx context.Context, task *model.RuleTask) error {
+	account, err := ParseAccountConfig(task.AccountConfig())
+	if err != nil {
+		return err
+	}
 
-	return SendBiliPrivateMessage(ctx, rule)
+	config, err := ParsePrivateMessageConfig(task.Rule.ConfigJson)
+	if err != nil {
+		return err
+	}
+
+	return SendPrivateMessage(ctx, account, config)
 }

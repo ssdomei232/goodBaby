@@ -6,29 +6,24 @@ import (
 	"strings"
 
 	"github.com/ssdomei232/goodBaby/internal/retry"
-	"github.com/ssdomei232/goodBaby/model"
 )
 
-// MakeRepositoryPublic 将规则中配置的仓库设置为 public
-func MakeRepositoryPublic(ctx context.Context, rule *model.Rule) error {
-	reposConfig, account, err := GetGithubReposAndAccountFromRule(rule)
-	if err != nil {
-		return err
-	}
-
+// MakeRepositoryPublic 把配置里的仓库逐个设置为 public
+//
+// 每个仓库单独重试、互不阻塞，最后汇总失败信息交给上层记录。
+func MakeRepositoryPublic(ctx context.Context, account *GithubAccount, config *GithubReposConfig) error {
 	var fails []string
-	for _, repo := range reposConfig.Repos {
-		err := retry.Do(ctx, func() error {
+	for _, repo := range config.Repos {
+		if err := retry.Do(ctx, func() error {
 			return SetRepositoryPublic(ctx, account.Token, account.Owner, repo)
-		})
-		if err != nil {
-			fails = append(fails, fmt.Sprintf("%s: %v", repo, err))
+		}); err != nil {
+			fails = append(fails, err.Error())
 		}
 	}
 
 	if len(fails) > 0 {
 		return fmt.Errorf("%d/%d 个仓库设置为 public 失败: %s",
-			len(fails), len(reposConfig.Repos), strings.Join(fails, "; "))
+			len(fails), len(config.Repos), strings.Join(fails, "; "))
 	}
 	return nil
 }

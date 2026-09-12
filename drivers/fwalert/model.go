@@ -1,6 +1,7 @@
 package fwalert
 
-const RuleTypeFwalert = "fwalert"
+// RuleType 饭碗警告规则类型标识
+const RuleType = "fwalert"
 
 type FwAlertRuleConfig struct {
 	WebhookURL string `json:"webhook_url"`

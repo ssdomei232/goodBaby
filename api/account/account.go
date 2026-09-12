@@ -181,7 +181,7 @@ func HandleTestAccount(c *gin.Context) {
 
 // HandleCheckDeleteAccount 检查删除账号请求
 //
-// 删除账号会同时删除相关规则，先请求该接口获取受影响的规则
+// 删除账号会同时删除相关规则(含消息网关规则)，先请求该接口获取受影响的规则
 func HandleCheckDeleteAccount(c *gin.Context) {
 	userInfo, err := user.GetUserInfoByGinCtx(c)
 	if err != nil {
@@ -201,7 +201,16 @@ func HandleCheckDeleteAccount(c *gin.Context) {
 		return
 	}
 
-	response.OK(c, rules)
+	gatewayRules, err := getGatewayRulesByAccountID(accountID, userInfo.ID)
+	if err != nil {
+		response.ServerError(c, "获取相关网关规则失败")
+		return
+	}
+
+	response.OK(c, gin.H{
+		"rules":         rules,
+		"gateway_rules": gatewayRules,
+	})
 }
 
 // HandleDeleteAccount 删除账号及其关联规则
@@ -239,6 +248,19 @@ func HandleDeleteAccount(c *gin.Context) {
 	for _, oneRule := range rules {
 		if err := rule.DeleteRuleByID(oneRule.ID, userInfo.ID); err != nil {
 			response.ServerError(c, "删除相关规则失败")
+			return
+		}
+	}
+
+	// 删除相关的消息网关规则
+	gatewayRules, err := getGatewayRulesByAccountID(accountID, userInfo.ID)
+	if err != nil {
+		response.ServerError(c, "获取相关网关规则失败")
+		return
+	}
+	for _, oneRule := range gatewayRules {
+		if err := rule.DeleteGatewayRuleByID(oneRule.ID, userInfo.ID); err != nil {
+			response.ServerError(c, "删除相关网关规则失败")
 			return
 		}
 	}

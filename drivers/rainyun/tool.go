@@ -4,31 +4,43 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/ssdomei232/goodBaby/handler/db"
-	"github.com/ssdomei232/goodBaby/model"
 	"github.com/ssdomei232/rainyun-go-sdk/v2/rainyun/public"
 	"github.com/ssdomei232/rainyun-go-sdk/v2/rainyun/rcs"
 	"github.com/ssdomei232/rainyun-go-sdk/v2/rainyun/rgs"
 )
 
-// 从 Rule 中获取 RainyunConfig
-func getRainyunConfigFromRule(rule *model.Rule) (*RainyunWorkOrderRule, error) {
-	var rainyunConfig RainyunWorkOrderRule
-	if err := json.Unmarshal([]byte(rule.ConfigJson), &rainyunConfig); err != nil {
-		return nil, fmt.Errorf("解析Rainyun规则配置失败: %w", err)
+// ParseAccountConfig 解析雨云账号配置
+func ParseAccountConfig(config string) (*RainyunAccount, error) {
+	if config == "" {
+		return nil, fmt.Errorf("解析雨云账号配置失败: 规则没有关联账号")
 	}
-	return &rainyunConfig, nil
+
+	var account RainyunAccount
+	if err := json.Unmarshal([]byte(config), &account); err != nil {
+		return nil, fmt.Errorf("解析雨云账号配置失败: %v", err)
+	}
+	return &account, nil
 }
 
-// 从 Rule 中获取 RainyunAccount
-func getRainyunAccountFromRule(rule *model.Rule) (*RainyunAccount, error) {
-	var rainyunAccount RainyunAccount
-	if err := db.LoadAccountConfig(rule.AccountID, &rainyunAccount); err != nil {
-		return nil, err
+// ParseWorkOrderConfig 解析雨云工单规则配置
+func ParseWorkOrderConfig(configJSON string) (*RainyunWorkOrderRule, error) {
+	var config RainyunWorkOrderRule
+	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
+		return nil, fmt.Errorf("解析雨云工单规则配置失败: %v", err)
 	}
-	return &rainyunAccount, nil
+	return &config, nil
 }
 
+// ParseRunAwayConfig 解析雨云跑路规则配置
+func ParseRunAwayConfig(configJSON string) (*RainyunRunAwayRule, error) {
+	var config RainyunRunAwayRule
+	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
+		return nil, fmt.Errorf("解析雨云跑路规则配置失败: %v", err)
+	}
+	return &config, nil
+}
+
+// reinstallOneRCS 重装一台 RCS
 func reinstallOneRCS(rcsID int, rcsClient *rcs.Client) error {
 	rcsDetail, err := rcsClient.GetRcsDetails(rcsID)
 	if err != nil {
@@ -42,20 +54,17 @@ func reinstallOneRCS(rcsID int, rcsClient *rcs.Client) error {
 
 	for _, os := range rcsOSList.Data {
 		if os.Region == rcsDetail.Data.Data.Node.Region && os.OsType == "linux" {
-			rcsReinstallRequest := &rcs.ReinstallRcsRequest{
+			_, err := rcsClient.ReinstallRcs(rcsID, &rcs.ReinstallRcsRequest{
 				OsID:     os.ID,
 				ResetOsd: true,
-			}
-			_, err := rcsClient.ReinstallRcs(rcsID, rcsReinstallRequest)
-			if err != nil {
-				return err
-			}
-			break
+			})
+			return err
 		}
 	}
-	return nil
+	return fmt.Errorf("没有找到可用的 linux 镜像")
 }
 
+// reinstallOneRGS 重装一台 RGS
 func reinstallOneRGS(rgsID int, rgsClient *rgs.Client) error {
 	rgsDetail, err := rgsClient.GetRgsDetails(rgsID)
 	if err != nil {
@@ -69,16 +78,12 @@ func reinstallOneRGS(rgsID int, rgsClient *rgs.Client) error {
 
 	for _, os := range rgsOSList.Data {
 		if os.Region == rgsDetail.Data.Data.Node.Region && os.OsType == "linux" {
-			rgsReinstallRequest := &rcs.ReinstallRcsRequest{
+			_, err := rgsClient.Reinstallgs(rgsID, &rcs.ReinstallRcsRequest{
 				OsID:     os.ID,
 				ResetOsd: true,
-			}
-			_, err := rgsClient.Reinstallgs(rgsID, rgsReinstallRequest)
-			if err != nil {
-				return err
-			}
-			break
+			})
+			return err
 		}
 	}
-	return nil
+	return fmt.Errorf("没有找到可用的 linux 镜像")
 }

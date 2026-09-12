@@ -3,13 +3,13 @@ package user
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/ssdomei232/goodBaby/drivers/dingtalk"
 	"github.com/ssdomei232/goodBaby/handler/db"
 	"github.com/ssdomei232/goodBaby/model"
 	"golang.org/x/crypto/bcrypt"
@@ -214,11 +214,10 @@ func validateNotifyConfig(raw *string) error {
 		return nil
 	}
 
-	var config struct {
-		AccessToken string `json:"access_token"`
-	}
-	if err := json.Unmarshal([]byte(*raw), &config); err != nil {
-		return fmt.Errorf("钉钉配置 JSON 格式错误: %v", err)
+	// 复用钉钉驱动里的解析逻辑，避免两边对配置格式的理解不一致
+	config, err := dingtalk.ParseAccountConfig(*raw)
+	if err != nil {
+		return err
 	}
 	if config.AccessToken == "" {
 		return fmt.Errorf("钉钉配置中 access_token 不能为空")

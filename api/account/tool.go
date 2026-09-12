@@ -45,6 +45,20 @@ func getRulesByAccountID(accountID uint, uid uint) ([]*model.Rule, error) {
 	return rules, nil
 }
 
+// getGatewayRulesByAccountID 获取账号相关的消息网关规则列表
+func getGatewayRulesByAccountID(accountID uint, uid uint) ([]*model.GatewayRule, error) {
+	gormDB, err := db.GetGormDB()
+	if err != nil {
+		return nil, err
+	}
+
+	rules := []*model.GatewayRule{}
+	if err := gormDB.Where("account_id = ? AND uid = ?", accountID, uid).Find(&rules).Error; err != nil {
+		return nil, err
+	}
+	return rules, nil
+}
+
 // maskAccount 掩码账号配置中的敏感字段，避免 Cookie/密码原样返回给前端
 func maskAccount(account model.Account) model.Account {
 	fields := accountConfigChecker.InitValidatorRegistry().FieldsOf(account.Type)
