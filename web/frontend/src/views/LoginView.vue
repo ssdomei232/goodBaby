@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { siteApi, userApi } from '@/api'
@@ -7,10 +7,43 @@ import { ApiError } from '@/api/client'
 import type { SiteInfo } from '@/api/types'
 import { useUserStore } from '@/stores/user'
 import LogoMark from '@/components/LogoMark.vue'
+import ThemePicker from '@/components/ThemePicker.vue'
+import ParanoiaBackdrop from '@/components/ParanoiaBackdrop.vue'
+import { useTheme } from '@/composables/useTheme'
+import { paranoiaCharacters } from '@/data/paranoia'
+import loginArt from '@/assets/paranoia/ch09.jpg'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+
+// 登录页也能挑皮肤，这样不登录就能先看新主题
+const { isParanoia } = useTheme()
+
+/** 左侧理念区的文案：跟着皮肤换一副口吻 */
+const copy = computed(() =>
+  isParanoia.value
+    ? {
+        title: '妄想症',
+        slogan: 'Paranoia · 九重档案',
+        desc: '被害者泠珞、加害者与守护者颜语、背叛者零羽，\n九重正篇与四百七十五天的一场层层叠叠的戏剧。',
+        points: paranoiaCharacters
+          .slice(0, 3)
+          .map((item) => `${item.name}【${item.vocal}】· ${item.role}`),
+        quote: '谎言重复一千次就变成真理。所以，现实也是这样诞生的。',
+      }
+    : {
+        title: 'goodBaby',
+        slogan: "摇篮系统 · Dead Man's Switch",
+        desc: '设定签到周期并定期签到；\n超时未签到时，系统会自动执行你预设的规则。',
+        points: [
+          '到期前通过钉钉机器人提醒签到',
+          '支持发送邮件、QQ、钉钉消息、B 站动态',
+          '支持自动公开 GitHub 仓库',
+        ],
+        quote: '',
+      },
+)
 
 const site = ref<SiteInfo | null>(null)
 const mode = ref<'login' | 'register'>('login')
@@ -64,21 +97,27 @@ async function submit() {
 </script>
 
 <template>
-  <div class="login-page">
+  <div
+    class="login-page"
+    :class="{ 'skin-paranoia': isParanoia }"
+    :style="isParanoia ? { '--pa-login-art': `url(${loginArt})` } : undefined"
+  >
+    <!-- 外观主题：登录前就能先看一眼新皮肤 -->
+    <div class="skin-corner"><ThemePicker /></div>
+
     <!-- 左侧：项目介绍 -->
     <div class="intro">
+      <!-- 妄想症皮肤下，花瓣落在曲绘之上 -->
+      <ParanoiaBackdrop v-if="isParanoia" />
+
       <div class="intro-inner gb-rise">
         <div class="intro-mark"><LogoMark :size="28" /></div>
-        <h1 class="intro-title">goodBaby</h1>
-        <p class="intro-slogan">摇篮系统 · Dead Man's Switch</p>
-        <p class="intro-desc">
-          设定签到周期并定期签到；<br />
-          超时未签到时，系统会自动执行你预设的规则。
-        </p>
+        <h1 class="intro-title">{{ copy.title }}</h1>
+        <p class="intro-slogan">{{ copy.slogan }}</p>
+        <p class="intro-desc">{{ copy.desc }}</p>
+        <p v-if="copy.quote" class="intro-quote">{{ copy.quote }}</p>
         <ul class="intro-points">
-          <li>到期前通过钉钉机器人提醒签到</li>
-          <li>支持发送邮件、QQ、钉钉消息、B 站动态</li>
-          <li>支持自动公开 GitHub 仓库</li>
+          <li v-for="point in copy.points" :key="point">{{ point }}</li>
         </ul>
       </div>
     </div>
@@ -137,12 +176,24 @@ async function submit() {
 .login-page {
   height: 100%;
   display: flex;
+  position: relative;
+}
+
+/* 皮肤开关固定在右上角，两种皮肤下都在同一位置 */
+.skin-corner {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 20;
 }
 
 /* ---------- 左侧理念区 ---------- */
 
 .intro {
   flex: 1.15;
+  position: relative;
+  /* 隔离出图层，让飘落的花瓣落在曲绘之上、文案之下 */
+  isolation: isolate;
   background:
     radial-gradient(ellipse at 20% 20%, rgb(102 204 255 / 0.16) 0%, transparent 55%),
     radial-gradient(ellipse at 85% 80%, rgb(102 204 255 / 0.12) 0%, transparent 50%),
@@ -154,6 +205,8 @@ async function submit() {
 }
 
 .intro-inner {
+  position: relative;
+  z-index: 1;
   max-width: 420px;
 }
 
@@ -190,6 +243,17 @@ async function submit() {
   color: rgb(255 255 255 / 0.66);
   font-size: 15px;
   line-height: 2;
+  /* 文案里用 \n 换行，避免模板里散落 <br /> */
+  white-space: pre-line;
+}
+
+.intro-quote {
+  margin: 0 0 24px;
+  padding-left: 14px;
+  border-left: 2px solid var(--gb-primary);
+  color: rgb(255 255 255 / 0.78);
+  font-size: 13px;
+  line-height: 1.95;
 }
 
 .intro-points {
@@ -259,6 +323,73 @@ async function submit() {
 .switch-mode {
   text-align: center;
   margin-top: 20px;
+}
+
+/* ---------- 妄想症皮肤：登录页换成一张曲绘 ---------- */
+
+.login-page.skin-paranoia .intro {
+  /* 曲绘垫在最底下，压一层暗色的膜，让文字依然读得清 */
+  background:
+    linear-gradient(
+      180deg,
+      rgb(9 6 12 / 0.82) 0%,
+      rgb(9 6 12 / 0.9) 55%,
+      rgb(22 7 14 / 0.97) 100%
+    ),
+    radial-gradient(ellipse at 22% 18%, rgb(224 36 94 / 0.4), transparent 58%),
+    var(--pa-login-art) center / cover no-repeat,
+    linear-gradient(160deg, #14060c 0%, #08070c 100%);
+}
+
+.login-page.skin-paranoia .intro-mark {
+  border-radius: 6px;
+  background: linear-gradient(135deg, #e0245e 0%, #7a0f2c 100%);
+  color: #fff;
+  box-shadow: 0 8px 28px rgb(224 36 94 / 0.5);
+}
+
+.login-page.skin-paranoia .intro-title {
+  font-family: var(--pa-serif);
+  font-size: 38px;
+  letter-spacing: 0.12em;
+}
+
+.login-page.skin-paranoia .intro-slogan {
+  font-family: var(--pa-mono);
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  color: #f2568a;
+}
+
+.login-page.skin-paranoia .intro-desc {
+  color: rgb(255 255 255 / 0.7);
+  font-size: 14px;
+}
+
+.login-page.skin-paranoia .intro-quote {
+  font-family: var(--pa-serif);
+  color: rgb(255 255 255 / 0.86);
+}
+
+.login-page.skin-paranoia .intro-points li {
+  color: rgb(255 255 255 / 0.56);
+}
+
+/* 列表点改成小小的菱形，像彼岸花的花瓣 */
+.login-page.skin-paranoia .intro-points li::before {
+  border-radius: 1px;
+  background: #e0245e;
+  transform: rotate(45deg);
+}
+
+.login-page.skin-paranoia .panel {
+  position: relative;
+  z-index: 1;
+}
+
+.login-page.skin-paranoia .panel-title {
+  font-family: var(--pa-serif);
+  letter-spacing: 0.1em;
 }
 
 /* 窄屏时隐藏左侧介绍，登录框居中占满 */

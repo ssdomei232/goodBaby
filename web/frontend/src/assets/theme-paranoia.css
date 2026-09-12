@@ -1,0 +1,569 @@
+/* ============================================================
+   妄想症 · Paranoia 主题（致敬篇）
+   ------------------------------------------------------------
+   在 <html> 上挂 .paranoia 即启用，可与 .dark 叠加：
+
+     html.paranoia            现实 —— 白之章，近乎空白的纸色
+     html.paranoia.dark       妄想 —— 黑之章，石蒜红与深渊
+
+   取色依据原作 PV 的用色习惯：
+     石蒜红 #e0245e  彼岸花与零羽
+     洛天依蓝 #66ccff 泠珞（也是 goodBaby 原本的品牌色）
+     言和青 #7ee8e0 / 言和黄 #f2d16b 颜语的守护者与加害者两面
+   ============================================================ */
+
+html.paranoia {
+  /* 标题用衬线体，制造「档案 / 卷宗」的观感 */
+  --pa-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', STSong, SimSun, serif;
+  --pa-mono: ui-monospace, SFMono-Regular, Consolas, 'Courier New', monospace;
+  --pa-crimson: #e0245e;
+  --pa-crimson-soft: #f2568a;
+  --pa-blue: #66ccff;
+  --pa-cyan: #7ee8e0;
+  --pa-yellow: #f2d16b;
+  --pa-violet: #b98cff;
+  /* 卡片不再是圆润的「气泡」，而是切边的纸片 */
+  --gb-radius-card: 6px;
+}
+
+/* ---------- 现实：白之章 ---------- */
+
+html.paranoia:not(.dark) {
+  --gb-primary: #b3163c;
+  --gb-primary-deep: #8c112f;
+  --gb-ink: #17121a;
+  --gb-ink-soft: #2a1c25;
+  --gb-bg: #f5f1ee;
+  --gb-card: #fffdfc;
+  --gb-shadow-card: 0 1px 2px rgb(90 24 48 / 0.05), 0 1px 10px rgb(90 24 48 / 0.05);
+  --gb-shadow-hover: 0 10px 26px rgb(120 20 50 / 0.14);
+
+  --pa-line: rgb(179 22 60 / 0.16);
+  --pa-line-soft: rgb(179 22 60 / 0.08);
+  --pa-line-strong: rgb(179 22 60 / 0.36);
+  --pa-glow: rgb(179 22 60 / 0.16);
+  --pa-ghost: rgb(43 20 32 / 0.055);
+  --pa-grain-opacity: 0.05;
+  --pa-veil: rgb(255 253 252 / 0.72);
+
+  --el-color-primary: #b3163c;
+  --el-color-primary-light-3: #c94f6d;
+  --el-color-primary-light-5: #d98899;
+  --el-color-primary-light-7: #e8b4bf;
+  --el-color-primary-light-8: #f0cad2;
+  --el-color-primary-light-9: #f8e7ea;
+  --el-color-primary-dark-2: #8f1230;
+
+  --el-bg-color: #fffdfc;
+  --el-bg-color-page: #f5f1ee;
+  --el-bg-color-overlay: #fffdfc;
+  --el-text-color-primary: #2b2028;
+  --el-text-color-regular: #4d3f47;
+  --el-text-color-secondary: #8a7880;
+  --el-text-color-placeholder: #a8969e;
+  --el-border-color: rgb(179 22 60 / 0.2);
+  --el-border-color-light: rgb(179 22 60 / 0.14);
+  --el-border-color-lighter: rgb(179 22 60 / 0.1);
+  --el-border-color-extra-light: rgb(179 22 60 / 0.08);
+  --el-fill-color: rgb(179 22 60 / 0.06);
+  --el-fill-color-light: rgb(179 22 60 / 0.04);
+  --el-fill-color-lighter: rgb(179 22 60 / 0.025);
+  --el-fill-color-blank: #fffdfc;
+  --el-mask-color: rgb(43 20 32 / 0.42);
+}
+
+/* ---------- 妄想：黑之章 ---------- */
+
+html.paranoia.dark {
+  --gb-primary: #e0245e;
+  /* 深底之上需要更亮的强调色才读得清 */
+  --gb-primary-deep: #f2568a;
+  --gb-ink: #100a12;
+  --gb-ink-soft: #1d0f1b;
+  --gb-bg: #08070c;
+  --gb-card: #150f19;
+  --gb-shadow-card: 0 1px 2px rgb(0 0 0 / 0.5);
+  --gb-shadow-hover: 0 10px 30px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(224 36 94 / 0.14);
+
+  --pa-line: rgb(224 36 94 / 0.24);
+  --pa-line-soft: rgb(224 36 94 / 0.12);
+  --pa-line-strong: rgb(224 36 94 / 0.5);
+  --pa-glow: rgb(224 36 94 / 0.34);
+  --pa-ghost: rgb(236 230 239 / 0.045);
+  --pa-grain-opacity: 0.075;
+  --pa-veil: rgb(10 8 14 / 0.72);
+
+  --el-color-primary: #e0245e;
+  --el-color-primary-light-3: #e6507e;
+  --el-color-primary-light-5: #ec7c9f;
+  --el-color-primary-light-7: #f2a8bf;
+  --el-color-primary-light-8: #f6bfd0;
+  --el-color-primary-light-9: #2a1622;
+  --el-color-primary-dark-2: #b31d4b;
+
+  --el-bg-color: #150f19;
+  --el-bg-color-page: #08070c;
+  --el-bg-color-overlay: #1b1220;
+  --el-text-color-primary: #ece6ef;
+  --el-text-color-regular: #cabfcb;
+  --el-text-color-secondary: #9a8b98;
+  --el-text-color-placeholder: #6f616d;
+  --el-border-color: rgb(224 36 94 / 0.26);
+  --el-border-color-light: rgb(224 36 94 / 0.18);
+  --el-border-color-lighter: rgb(224 36 94 / 0.14);
+  --el-border-color-extra-light: rgb(224 36 94 / 0.1);
+  --el-fill-color: rgb(224 36 94 / 0.12);
+  --el-fill-color-light: rgb(224 36 94 / 0.08);
+  --el-fill-color-lighter: rgb(224 36 94 / 0.05);
+  --el-fill-color-blank: #150f19;
+  --el-mask-color: rgb(4 3 6 / 0.66);
+}
+
+/* ---------- 底色：纸纹与深渊雾气 ---------- */
+
+html.paranoia,
+html.paranoia body,
+html.paranoia #app {
+  background: transparent;
+}
+
+html.paranoia body {
+  background-color: var(--gb-bg);
+  background-image:
+    radial-gradient(1100px 620px at 8% -12%, rgb(224 36 94 / 0.1), transparent 62%),
+    radial-gradient(900px 520px at 102% 4%, rgb(102 204 255 / 0.07), transparent 58%),
+    radial-gradient(760px 760px at 50% 118%, rgb(224 36 94 / 0.08), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ---------- 排版 ---------- */
+
+html.paranoia .page-header h2,
+html.paranoia .el-card__header,
+html.paranoia .el-dialog__title,
+html.paranoia h1,
+html.paranoia h2,
+html.paranoia h3,
+html.paranoia .pa-display {
+  font-family: var(--pa-serif);
+  letter-spacing: 0.02em;
+}
+
+html.paranoia .page-header h2 {
+  font-weight: 700;
+  /* 标题下压一道极细的红线，像卷宗上的分割线 */
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--pa-line);
+}
+
+html.paranoia .mono,
+html.paranoia .stat-value,
+html.paranoia .countdown-num,
+html.paranoia .ring-pct {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 卡片：切边的纸片 ---------- */
+
+html.paranoia .el-card {
+  border: 1px solid var(--pa-line);
+  box-shadow: var(--gb-shadow-card);
+  background: var(--gb-card);
+}
+
+html.paranoia .el-card__header {
+  border-bottom: 1px solid var(--pa-line);
+  font-weight: 600;
+}
+
+html.paranoia:not(.dark) .el-card {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / 0.6), rgb(255 252 251 / 0.2));
+}
+
+html.paranoia.dark .el-card {
+  background-image: linear-gradient(180deg, rgb(224 36 94 / 0.05), transparent 42%);
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- 按钮 ---------- */
+
+html.paranoia .el-button {
+  border-radius: 4px;
+}
+
+html.paranoia .el-button--primary {
+  --el-button-text-color: #fff7fa;
+  --el-button-hover-text-color: #fff;
+  --el-button-active-text-color: #fff;
+  --el-button-bg-color: var(--gb-primary);
+  --el-button-border-color: var(--gb-primary);
+  --el-button-hover-bg-color: var(--pa-crimson-soft);
+  --el-button-hover-border-color: var(--pa-crimson-soft);
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+html.paranoia.dark .el-button--primary {
+  --el-button-text-color: #fff;
+}
+
+html.paranoia .el-button--default:not(.is-disabled) {
+  background: transparent;
+  border-color: var(--pa-line);
+  color: var(--el-text-color-regular);
+}
+
+html.paranoia .el-button--default:not(.is-disabled):hover {
+  border-color: var(--pa-line-strong);
+  color: var(--gb-primary-deep);
+  background: var(--el-fill-color-light);
+}
+
+/* ---------- 表单与表格 ---------- */
+
+html.paranoia .el-input__wrapper,
+html.paranoia .el-textarea__inner,
+html.paranoia .el-select__wrapper {
+  border-radius: 4px;
+  background: transparent;
+}
+
+html.paranoia .el-table {
+  --el-table-border-color: var(--pa-line-soft);
+  --el-table-header-bg-color: transparent;
+  --el-table-row-hover-bg-color: var(--el-fill-color-light);
+  background: transparent;
+}
+
+html.paranoia .el-table tr,
+html.paranoia .el-table th.el-table__cell {
+  background: transparent;
+}
+
+html.paranoia .el-table th.el-table__cell {
+  font-family: var(--pa-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--el-text-color-secondary);
+}
+
+html.paranoia .el-tag {
+  border-radius: 3px;
+  font-family: var(--pa-mono);
+  letter-spacing: 0.04em;
+}
+
+html.paranoia .el-dialog,
+html.paranoia .el-message-box {
+  border: 1px solid var(--pa-line);
+  border-radius: 8px;
+}
+
+html.paranoia .el-dialog__header {
+  border-bottom: 1px solid var(--pa-line-soft);
+  margin-right: 0;
+  padding-bottom: 14px;
+}
+
+html.paranoia .el-alert {
+  border-radius: 4px;
+  border: 1px solid var(--pa-line);
+}
+
+html.paranoia .el-empty__description {
+  letter-spacing: 0.08em;
+}
+
+html.paranoia .el-loading-mask {
+  background-color: var(--pa-veil);
+}
+
+/* 键盘焦点环改用石蒜红 */
+html.paranoia :focus-visible {
+  outline: 2px solid var(--gb-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- 滚动条 ---------- */
+
+html.paranoia ::-webkit-scrollbar-thumb {
+  background: rgb(224 36 94 / 0.35);
+}
+
+html.paranoia ::-webkit-scrollbar-thumb:hover {
+  background: rgb(224 36 94 / 0.55);
+}
+
+/* ============================================================
+   主题通用零件
+   ============================================================ */
+
+/* 章节记号：b（坠落之章）/ #（上升之章） */
+.pa-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--pa-mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  padding: 3px 6px;
+  border: 1px solid var(--pa-line);
+  border-radius: 3px;
+  color: var(--el-text-color-secondary);
+  white-space: nowrap;
+}
+
+.pa-mark em {
+  font-style: normal;
+  color: var(--gb-primary);
+  font-weight: 700;
+}
+
+.pa-mark--plain {
+  border-color: transparent;
+  padding: 0;
+}
+
+/* 竖排的幽灵字，用作背景里的「妄想」 */
+.pa-ghost-text {
+  position: absolute;
+  writing-mode: vertical-rl;
+  font-family: var(--pa-serif);
+  font-weight: 700;
+  color: var(--pa-ghost);
+  letter-spacing: 0.3em;
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* 细红分割线 */
+.pa-rule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--pa-line-strong);
+}
+
+.pa-rule::before,
+.pa-rule::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--pa-line);
+}
+
+/* 引文块 */
+.pa-quote {
+  font-family: var(--pa-serif);
+  line-height: 2;
+  color: var(--el-text-color-regular);
+  border-left: 2px solid var(--gb-primary);
+  padding: 2px 0 2px 16px;
+}
+
+/* 胶片感的图片：统一降饱和，hover 时回血 */
+.pa-film {
+  position: relative;
+  overflow: hidden;
+  background: var(--gb-ink);
+}
+
+.pa-film img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.72) contrast(1.06) brightness(0.94);
+  transition:
+    transform 0.6s var(--gb-ease),
+    filter 0.6s var(--gb-ease);
+}
+
+.pa-film::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 45%, rgb(8 6 10 / 0.78) 100%),
+    radial-gradient(120% 90% at 50% 10%, transparent 40%, rgb(224 36 94 / 0.16) 100%);
+  pointer-events: none;
+}
+
+.pa-film:hover img {
+  transform: scale(1.045);
+  filter: saturate(1) contrast(1.04) brightness(1);
+}
+
+/* ---------- 背景层 ---------- */
+
+.pa-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 噪点：让大面积纯色不至于太平 */
+.pa-backdrop__grain {
+  position: absolute;
+  inset: -40px;
+  opacity: var(--pa-grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* 暗角 */
+.pa-backdrop__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(130% 100% at 50% 40%, transparent 42%, rgb(6 4 9 / 0.5) 100%);
+}
+
+html.paranoia:not(.dark) .pa-backdrop__vignette {
+  background: radial-gradient(130% 100% at 50% 40%, transparent 55%, rgb(120 60 80 / 0.16) 100%);
+}
+
+/* 缓慢下移的扫描光带 */
+.pa-backdrop__scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 34vh;
+  background: linear-gradient(180deg, transparent, rgb(224 36 94 / 0.07) 45%, transparent);
+  animation: pa-scan 26s linear infinite;
+}
+
+@keyframes pa-scan {
+  0% {
+    transform: translate3d(0, -40vh, 0);
+  }
+  100% {
+    transform: translate3d(0, 120vh, 0);
+  }
+}
+
+/* 石蒜花瓣 */
+.pa-backdrop__petals {
+  position: absolute;
+  inset: 0;
+}
+
+.pa-petal {
+  position: absolute;
+  top: 0;
+  left: var(--pa-x, 50%);
+  width: calc(14px * var(--pa-scale, 1));
+  height: calc(14px * var(--pa-scale, 1));
+  opacity: 0;
+  animation: pa-fall var(--pa-dur, 22s) linear var(--pa-delay, 0s) infinite;
+  will-change: transform;
+}
+
+.pa-petal svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  animation: pa-spin calc(var(--pa-dur, 22s) / 5) ease-in-out infinite alternate;
+}
+
+/* 深色底上的石蒜红要提亮一点才看得见 */
+html.paranoia.dark .pa-petal svg {
+  filter: brightness(1.5) saturate(1.15);
+}
+
+@keyframes pa-fall {
+  0% {
+    transform: translate3d(0, -14vh, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: var(--pa-opacity, 0.5);
+  }
+  85% {
+    opacity: var(--pa-opacity, 0.5);
+  }
+  100% {
+    transform: translate3d(var(--pa-drift, 40px), 112vh, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes pa-spin {
+  from {
+    transform: rotate(-24deg);
+  }
+  to {
+    transform: rotate(24deg);
+  }
+}
+
+/* 呼吸的红色光晕，浮在角落 */
+.pa-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(70px);
+  animation: pa-breathe 16s ease-in-out infinite;
+}
+
+@keyframes pa-breathe {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.12);
+  }
+}
+
+/* ---------- 皮肤切换时强制让新画面浮到最上层 ---------- */
+
+html.vt-skin::view-transition-old(root) {
+  z-index: 1;
+}
+
+html.vt-skin::view-transition-new(root) {
+  z-index: 2147483646;
+}
+
+/* 不支持 View Transitions 的浏览器退化成整页淡变 */
+html.no-vt.paranoia body,
+html.no-vt.paranoia .el-card,
+html.no-vt.paranoia .el-table tr,
+html.no-vt.paranoia .aside,
+html.no-vt.paranoia .header,
+html.no-vt.paranoia .nav-item {
+  transition:
+    background-color 0.36s var(--gb-ease),
+    border-color 0.36s var(--gb-ease),
+    color 0.36s var(--gb-ease);
+}
+
+/* ---------- 响应式 ---------- */
+
+@media (max-width: 768px) {
+  /* 小屏只留四片花瓣，省电也省注意力 */
+  .pa-backdrop__petals .pa-petal:nth-child(n + 5) {
+    display: none;
+  }
+
+  html.paranoia .page-header h2 {
+    font-size: 19px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pa-petal,
+  .pa-backdrop__scan,
+  .pa-orb {
+    animation: none;
+  }
+
+  .pa-petal {
+    opacity: 0;
+  }
+}

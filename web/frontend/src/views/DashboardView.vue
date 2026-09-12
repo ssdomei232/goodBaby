@@ -17,8 +17,15 @@ import type { DashboardOverview } from '@/api/types'
 import { formatDateTime, formatDuration } from '@/utils/format'
 import { useIsMobile } from '@/composables/useBreakpoint'
 import CountUp from '@/components/CountUp.vue'
+import { useTheme } from '@/composables/useTheme'
+import { paranoiaNavMarks, todaysQuote } from '@/data/paranoia'
 
 const isMobile = useIsMobile()
+
+// 妄想症皮肤下，仪表盘顶上多一条「今日签文」
+const { isParanoia } = useTheme()
+const dailyQuote = todaysQuote()
+const todayMark = paranoiaNavMarks.dashboard
 
 const router = useRouter()
 
@@ -62,56 +69,66 @@ const ringTextColor = computed(() => {
   return 'var(--gb-primary-deep)'
 })
 
-const stats = computed(() => [
-  {
-    label: '定时器',
-    sub: `已启用 ${overview.value?.enabled_timers ?? 0} 个`,
-    value: overview.value?.timer_count,
-    icon: TimerIcon,
-    color: '#66ccff',
-    bg: 'rgb(102 204 255 / 0.14)',
-    to: '/timers',
-  },
-  {
-    label: '规则',
-    sub: `定时器规则 ${overview.value?.rule_count ?? 0} 条`,
-    value: overview.value?.rule_count,
-    icon: Operation,
-    color: '#6366f1',
-    bg: 'rgb(99 102 241 / 0.12)',
-    to: '/rules',
-  },
-  {
-    label: '消息网关',
-    sub: `网关规则 ${overview.value?.gateway_rule_count ?? 0} 条`,
-    value: overview.value?.gateway_count,
-    icon: Connection,
-    color: '#0ea5e9',
-    bg: 'rgb(14 165 233 / 0.12)',
-    to: '/gateways',
-  },
-  {
-    label: '账号',
-    sub: '第三方凭据',
-    value: overview.value?.account_count,
-    icon: User,
-    color: '#f59e0b',
-    bg: 'rgb(245 158 11 / 0.12)',
-    to: '/accounts',
-  },
-  {
-    label: '已触发',
-    sub: '规则已执行',
-    value: overview.value?.triggered_count,
-    icon: Warning,
-    color: (overview.value?.triggered_count ?? 0) > 0 ? '#ef4444' : '#94a3b8',
-    bg:
-      (overview.value?.triggered_count ?? 0) > 0
+/**
+ * 统计卡配色：默认皮肤沿用品牌蓝，妄想症皮肤换成三位主角的主题色
+ * （泠珞蓝 / 颜语青与黄 / 零羽石蒜红）。
+ */
+const stats = computed(() => {
+  const pa = isParanoia.value
+  const triggered = (overview.value?.triggered_count ?? 0) > 0
+
+  return [
+    {
+      label: '定时器',
+      sub: `已启用 ${overview.value?.enabled_timers ?? 0} 个`,
+      value: overview.value?.timer_count,
+      icon: TimerIcon,
+      color: pa ? '#e0245e' : '#66ccff',
+      bg: pa ? 'rgb(224 36 94 / 0.16)' : 'rgb(102 204 255 / 0.14)',
+      to: '/timers',
+    },
+    {
+      label: '规则',
+      sub: `定时器规则 ${overview.value?.rule_count ?? 0} 条`,
+      value: overview.value?.rule_count,
+      icon: Operation,
+      color: pa ? '#b98cff' : '#6366f1',
+      bg: pa ? 'rgb(185 140 255 / 0.14)' : 'rgb(99 102 241 / 0.12)',
+      to: '/rules',
+    },
+    {
+      label: '消息网关',
+      sub: `网关规则 ${overview.value?.gateway_rule_count ?? 0} 条`,
+      value: overview.value?.gateway_count,
+      icon: Connection,
+      color: pa ? '#7ee8e0' : '#0ea5e9',
+      bg: pa ? 'rgb(126 232 224 / 0.14)' : 'rgb(14 165 233 / 0.12)',
+      to: '/gateways',
+    },
+    {
+      label: '账号',
+      sub: '第三方凭据',
+      value: overview.value?.account_count,
+      icon: User,
+      color: pa ? '#f2d16b' : '#f59e0b',
+      bg: pa ? 'rgb(242 209 107 / 0.14)' : 'rgb(245 158 11 / 0.12)',
+      to: '/accounts',
+    },
+    {
+      label: '已触发',
+      sub: '规则已执行',
+      value: overview.value?.triggered_count,
+      icon: Warning,
+      color: triggered ? '#ef4444' : pa ? '#8a7880' : '#94a3b8',
+      bg: triggered
         ? 'rgb(239 68 68 / 0.12)'
-        : 'rgb(148 163 184 / 0.12)',
-    to: '/logs',
-  },
-])
+        : pa
+          ? 'rgb(138 120 128 / 0.14)'
+          : 'rgb(148 163 184 / 0.12)',
+      to: '/logs',
+    },
+  ]
+})
 
 async function refresh() {
   loading.value = true
@@ -163,6 +180,21 @@ onUnmounted(() => {
           一键签到
         </el-button>
       </div>
+    </div>
+
+    <!-- 妄想症皮肤：今日签文 -->
+    <div v-if="isParanoia" class="pa-daily gb-rise">
+      <div class="pa-daily__mark">
+        <span class="pa-daily__sigil mono">{{ todayMark.sigil }}</span>
+        <span class="pa-daily__label">{{ todayMark.label }}</span>
+      </div>
+      <div class="pa-daily__body">
+        <p class="pa-daily__text">{{ dailyQuote.text }}</p>
+        <span class="pa-daily__from mono">{{ dailyQuote.from }}</span>
+      </div>
+      <button type="button" class="pa-daily__more" @click="router.push('/paranoia')">
+        九重档案 →
+      </button>
     </div>
 
     <!-- 已触发警示 -->
@@ -460,6 +492,105 @@ onUnmounted(() => {
 @media (max-width: 340px) {
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+}
+/* ---------- 妄想症皮肤：今日签文 ---------- */
+
+.pa-daily {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  border: 1px solid var(--pa-line);
+  border-left: 3px solid var(--gb-primary);
+  border-radius: 5px;
+  background: var(--gb-card);
+}
+
+.pa-daily__mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex: none;
+  padding-right: 16px;
+  border-right: 1px solid var(--pa-line);
+}
+
+.pa-daily__sigil {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--gb-primary);
+}
+
+.pa-daily__label {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--el-text-color-secondary);
+}
+
+.pa-daily__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pa-daily__text {
+  margin: 0 0 4px;
+  font-family: var(--pa-serif);
+  font-size: 14px;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
+  color: var(--el-text-color-primary);
+}
+
+.pa-daily__from {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--el-text-color-secondary);
+}
+
+.pa-daily__more {
+  flex: none;
+  padding: 6px 12px;
+  font-family: var(--pa-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--gb-primary);
+  border: 1px solid var(--pa-line);
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  transition:
+    border-color 0.2s var(--gb-ease),
+    background 0.2s var(--gb-ease);
+}
+
+.pa-daily__more:hover {
+  border-color: var(--pa-line-strong);
+  background: var(--el-fill-color-light);
+}
+
+@media (max-width: 768px) {
+  .pa-daily {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .pa-daily__mark {
+    flex-direction: row;
+    gap: 6px;
+    padding-right: 12px;
+  }
+
+  .pa-daily__text {
+    font-size: 13px;
+  }
+
+  .pa-daily__more {
+    width: 100%;
   }
 }
 </style>

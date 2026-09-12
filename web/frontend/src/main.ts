@@ -9,6 +9,8 @@ import App from './App.vue'
 import router from './router'
 import { initTheme } from './composables/useTheme'
 import './assets/main.css'
+// 皮肤样式放在最后，才能压过 Element Plus 与基础样式里的变量
+import './assets/theme-paranoia.css'
 
 // 挂载前先定好主题，避免登录页闪一下白底
 initTheme()

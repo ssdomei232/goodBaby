@@ -59,6 +59,12 @@ const router = createRouter({
           component: () => import('@/views/SettingsView.vue'),
           meta: { title: '设置' },
         },
+        {
+          path: 'paranoia',
+          name: 'paranoia',
+          component: () => import('@/views/ParanoiaView.vue'),
+          meta: { title: '妄想症' },
+        },
       ],
     },
     { path: '/:pathMatch(.*)*', redirect: '/dashboard' },

@@ -15,10 +15,14 @@ import {
   Moon,
   Sunny,
   Fold,
+  Reading,
 } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useTheme } from '@/composables/useTheme'
 import LogoMark from '@/components/LogoMark.vue'
+import ThemePicker from '@/components/ThemePicker.vue'
+import ParanoiaBackdrop from '@/components/ParanoiaBackdrop.vue'
+import { paranoiaNavMarks } from '@/data/paranoia'
 
 const route = useRoute()
 const router = useRouter()
@@ -35,7 +39,7 @@ watch(
   },
 )
 
-const menus = [
+const baseMenus = [
   { path: '/dashboard', title: '仪表盘', icon: Odometer },
   { path: '/timers', title: '定时器', icon: TimerIcon },
   { path: '/rules', title: '规则', icon: Operation },
@@ -49,7 +53,33 @@ const menus = [
 const activePath = computed(() => `/${route.path.split('/')[1] ?? ''}`)
 
 // 主题状态是全局单例，初始化在 main.ts 里完成
-const { isDark, toggleTheme } = useTheme()
+const { isDark, isParanoia, toggleTheme } = useTheme()
+
+/** 妄想症皮肤下多出一个「妄想症」展柜，其余菜单不变 */
+const menus = computed(() =>
+  isParanoia.value
+    ? [...baseMenus, { path: '/paranoia', title: '妄想症', icon: Reading }]
+    : baseMenus,
+)
+
+/** 每个功能对应的章节记号，只在妄想症皮肤下显示 */
+function markOf(path: string) {
+  return paranoiaNavMarks[path.slice(1)]
+}
+
+/** 当前所处章节，用于顶栏与侧边栏落款 */
+const currentMark = computed(() => markOf(activePath.value) ?? paranoiaNavMarks.dashboard)
+
+// 展柜属于皮肤的一部分：皮肤关掉（含直接输入地址进入）就退回仪表盘
+watch(
+  isParanoia,
+  (on) => {
+    if (!on && route.path.startsWith('/paranoia')) {
+      router.push('/dashboard')
+    }
+  },
+  { immediate: true },
+)
 
 async function handleLogout() {
   await userStore.logout()
@@ -59,7 +89,10 @@ async function handleLogout() {
 </script>
 
 <template>
-  <div class="layout">
+  <div class="layout" :class="{ 'skin-paranoia': isParanoia }">
+    <!-- 妄想症皮肤的背景层：噪点、暗角与飘落的石蒜花瓣 -->
+    <ParanoiaBackdrop v-if="isParanoia" />
+
     <!-- 移动端抽屉遮罩 -->
     <Transition name="fade">
       <div v-if="drawerOpen" class="drawer-mask" @click="drawerOpen = false" />
@@ -71,7 +104,7 @@ async function handleLogout() {
         <div class="logo-mark"><LogoMark :size="22" /></div>
         <div class="logo-name">
           <span class="logo-text">goodBaby</span>
-          <span class="logo-sub">摇篮系统</span>
+          <span class="logo-sub">{{ isParanoia ? '妄想症 · PARANOIA' : '摇篮系统' }}</span>
         </div>
       </div>
 
@@ -84,12 +117,22 @@ async function handleLogout() {
           :class="{ active: activePath === item.path }"
         >
           <el-icon :size="17"><component :is="item.icon" /></el-icon>
-          <span>{{ item.title }}</span>
+          <span class="nav-text">{{ item.title }}</span>
+          <span v-if="isParanoia" class="nav-mark mono">
+            {{ markOf(item.path)?.sigil }}{{ markOf(item.path)?.label }}
+          </span>
         </RouterLink>
       </nav>
 
       <div class="aside-footer">
-        <div class="footer-quote">goodBaby v2</div>
+        <template v-if="isParanoia">
+          <div class="footer-chapter">
+            <span class="footer-chapter__sigil mono">{{ currentMark?.sigil }} {{ currentMark?.label }}</span>
+            <span class="footer-chapter__title">{{ currentMark?.title }}</span>
+          </div>
+          <div class="footer-quote">九重妄想 · 幸存者 goodBaby v2</div>
+        </template>
+        <div v-else class="footer-quote">goodBaby v2</div>
       </div>
     </aside>
 
@@ -101,8 +144,12 @@ async function handleLogout() {
             <el-icon :size="18"><Fold /></el-icon>
           </button>
           <div class="header-title">{{ route.meta.title ?? '' }}</div>
+          <span v-if="isParanoia" class="pa-mark header-mark">
+            <em>{{ currentMark?.sigil }}</em>{{ currentMark?.title }}
+          </span>
         </div>
         <div class="header-actions">
+          <ThemePicker />
           <button
             class="icon-btn theme-btn"
             :title="isDark ? '切换到亮色' : '切换到暗色'"
@@ -124,7 +171,8 @@ async function handleLogout() {
                   <el-icon><Setting /></el-icon>设置
                 </el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">
-                  <el-icon><SwitchButton /></el-icon>退出登录
+                  <el-icon><SwitchButton /></el-icon>
+                  {{ isParanoia ? '八重回归 · 退出' : '退出登录' }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -399,7 +447,115 @@ async function handleLogout() {
   -webkit-overflow-scrolling: touch;
 }
 
+/* ---------- 妄想症皮肤：侧边栏变成卷宗封皮 ---------- */
+
+/* 背景层待在内容之下 */
+.layout.skin-paranoia {
+  position: relative;
+  isolation: isolate;
+}
+
+.layout.skin-paranoia > .content {
+  position: relative;
+  z-index: 1;
+}
+
+.layout.skin-paranoia .aside {
+  background:
+    linear-gradient(180deg, rgb(224 36 94 / 0.18) 0%, transparent 36%),
+    linear-gradient(180deg, var(--gb-ink) 0%, var(--gb-ink-soft) 100%);
+  border-right: 1px solid rgb(224 36 94 / 0.18);
+}
+
+.layout.skin-paranoia .logo-mark {
+  border-radius: 6px;
+  background: linear-gradient(135deg, #e0245e 0%, #7a0f2c 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgb(224 36 94 / 0.45);
+}
+
+.layout.skin-paranoia .user-avatar {
+  background: linear-gradient(135deg, #e0245e 0%, #7a2ea0 100%);
+  color: #fff;
+}
+
+.layout.skin-paranoia .logo-text {
+  font-family: var(--pa-serif);
+  letter-spacing: 0.04em;
+}
+
+.layout.skin-paranoia .logo-sub {
+  color: rgb(242 86 138 / 0.75);
+  font-family: var(--pa-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+.layout.skin-paranoia .nav-item {
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.layout.skin-paranoia .nav-item:hover {
+  background: rgb(224 36 94 / 0.1);
+  border-color: rgb(224 36 94 / 0.2);
+}
+
+.layout.skin-paranoia .nav-item.active {
+  background: linear-gradient(135deg, #e0245e 0%, #8f1230 100%);
+  color: #fff;
+  box-shadow: 0 4px 16px rgb(224 36 94 / 0.4);
+}
+
+/* 每一项右侧标出它对应的「重数」 */
+.layout.skin-paranoia .nav-mark {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  opacity: 0.45;
+}
+
+.layout.skin-paranoia .nav-item.active .nav-mark {
+  opacity: 0.85;
+}
+
+.layout.skin-paranoia .footer-chapter {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 0 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgb(224 36 94 / 0.2);
+}
+
+.layout.skin-paranoia .footer-chapter__sigil {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgb(242 86 138 / 0.85);
+}
+
+.layout.skin-paranoia .footer-chapter__title {
+  font-family: var(--pa-serif);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgb(255 255 255 / 0.88);
+}
+
+.layout.skin-paranoia .header-mark {
+  margin-left: 4px;
+  font-size: 10px;
+}
+
 /* ---------- 移动端 ---------- */
+
+@media (min-width: 769px) {
+  /* 桌面端侧边栏常驻，压到背景层上面 */
+  .layout.skin-paranoia > .aside {
+    position: relative;
+    z-index: 1;
+  }
+}
 
 @media (max-width: 768px) {
   /* 侧边栏脱离文档流，变成从左侧滑出的抽屉 */
@@ -450,6 +606,11 @@ async function handleLogout() {
 
   .main {
     padding: 16px 14px 32px;
+  }
+
+  /* 窄屏标题优先，章节记号召回抽屉里看 */
+  .layout.skin-paranoia .header-mark {
+    display: none;
   }
 }
 </style>
